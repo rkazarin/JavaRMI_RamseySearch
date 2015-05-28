@@ -4,6 +4,7 @@ import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+import ramsey.Graph;
 import ramsey.Task;
 import ramsey.mine.Solution;
 

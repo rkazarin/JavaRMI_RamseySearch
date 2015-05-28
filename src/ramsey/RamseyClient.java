@@ -1,15 +1,12 @@
 package ramsey;
 
-import util.Graph;
-import util.Log;
-import api.Result;
-import api.SharedState;
-import api.Space;
-
 import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+
+import util.Log;
+import api.Space;
 
 public class RamseyClient {
 	
@@ -27,7 +24,7 @@ public class RamseyClient {
 
 		String url = "rmi://" + domain + ":" + Space.DEFAULT_PORT + "/" + Space.DEFAULT_NAME;
 		
-		Space<RamseyChunk> space = (Space<RamseyChunk>) Naming.lookup(url);
+		Space<Graph> space = (Space<Graph>) Naming.lookup(url);
 
 		//RamseyClient client = new RamseyClient(graphStartSize);
 		
@@ -35,7 +32,7 @@ public class RamseyClient {
 
 		Log.log("Component, Time (ms)");
     
-		space.setTask( new RamseyTask( new Graph(6)), new TabooState(), new RamseyScheduler() );
+		space.setTask( null , new SharedTabooList(), new RamseyScheduler() );
 
 		while(true){
 			System.out.println(space.getSolution());
