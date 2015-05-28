@@ -75,11 +75,15 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		for(Proxy<R> p: allProxies.values()){
 			p.updateState(state, FORCE_STATE);
 		}
-		task.setUid(UID_POOL++);
-        
-		task.setTarget(SOLUTION_UID, 0);
-		registeredTasks.put(task.getUID(), task);
 		
+		if(task != null){
+			task.setUid(UID_POOL++);
+			
+			task.setTarget(SOLUTION_UID, 0);
+			registeredTasks.put(task.getUID(), task);
+			
+		}
+
 		if( scheduler != null) scheduler.stop();
 		scheduler = customScheduler;
 		scheduler.start();

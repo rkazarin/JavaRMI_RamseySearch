@@ -20,7 +20,7 @@ public interface Task<R> extends Serializable {
 
 	int getTargetPort();
 
-	Result<R> call(SharedState currentState, UpdateStateCallback callback);
+	Result<R> call(SharedState currentState, ComputerCallback<R> callback);
 	
 	void updateState(SharedState updatedState);
 	

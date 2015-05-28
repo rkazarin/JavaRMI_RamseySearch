@@ -4,10 +4,10 @@ import java.util.Arrays;
 import java.util.LinkedList;
 import java.util.List;
 
+import api.ComputerCallback;
 import api.Result;
 import api.SharedState;
 import api.Task;
-import api.UpdateStateCallback;
 
 public abstract class TaskClosure<R> implements Task<R>{
 	
@@ -125,7 +125,7 @@ public abstract class TaskClosure<R> implements Task<R>{
 	}
 	
 	@Override
-	public Result<R> call(SharedState currentState, UpdateStateCallback callback){
+	public Result<R> call(SharedState currentState, ComputerCallback<R> callback){
 		long clientStartTime = System.nanoTime();
 		Result<R> result;
 		try {
@@ -165,6 +165,6 @@ public abstract class TaskClosure<R> implements Task<R>{
 	 * 
 	 * @return ResultTasks OR ResultValue
 	 */
-	protected abstract Result<R> execute(SharedState currentState, UpdateStateCallback callback);
+	protected abstract Result<R> execute(SharedState currentState, ComputerCallback<R> callback)  throws Exception;
 
 }

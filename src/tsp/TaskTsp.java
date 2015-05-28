@@ -8,7 +8,7 @@ import system.TaskClosure;
 import api.Result;
 import api.SharedState;
 import api.Task;
-import api.UpdateStateCallback;
+import api.ComputerCallback;
 
 public class TaskTsp extends TaskClosure<ChunkTsp> {
 
@@ -46,7 +46,7 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Result<ChunkTsp> execute(SharedState initialState, UpdateStateCallback callback) {	
+	public Result<ChunkTsp> execute(SharedState initialState, ComputerCallback callback) {	
 		currentState = (StateTsp)initialState;
 		
 		//Shortcut Computation
@@ -110,7 +110,7 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 		return out+" >["+targetUid+"]";
 	}
 	
-	private ChunkTsp solve(final List<Integer> fixedCities, final double fixedCitiesLength, final List<Integer> toPermute,  UpdateStateCallback callback){
+	private ChunkTsp solve(final List<Integer> fixedCities, final double fixedCitiesLength, final List<Integer> toPermute,  ComputerCallback callback){
 	
 		if(toPermute.size() == 0){
 			

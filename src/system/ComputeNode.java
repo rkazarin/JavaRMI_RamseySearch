@@ -16,7 +16,7 @@ import api.Result;
 import api.SharedState;
 import api.Space;
 import api.Task;
-import api.UpdateStateCallback;
+import api.ComputerCallback;
 
 public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 
@@ -96,11 +96,19 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 		public void run() {
 			while(true) try {
 				Task<R> task = tasks.take();			
-				Result<R> result = task.call(state, new UpdateStateCallback() {
+				Result<R> result = task.call(state, new ComputerCallback<R>() {
 					
 					@Override
 					public void updateState(SharedState resultingState){
 						updateStateLocally(resultingState);
+					}
+
+					@Override
+					public void producePartialResult(Result<R> result) {
+						try {
+							results.put(result);
+						}
+						catch (InterruptedException e) {}
 					}
 				});
 				
