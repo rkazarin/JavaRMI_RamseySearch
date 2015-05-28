@@ -4,16 +4,19 @@ import java.rmi.RemoteException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Log;
 import api.Capabilities;
 import api.Computer;
+import api.Proxy;
 import api.ProxyCallback;
+import api.ProxyStoppedException;
 import api.Result;
 import api.SharedState;
 import api.Task;
 
-public class Proxy<R> {
+public class ProxyImp<R> implements Proxy<R> {
 
 	private final Computer<R> computer;
 	private final int id;
@@ -23,22 +26,20 @@ public class Proxy<R> {
 	private final Capabilities spec;
 	
 	private Map<Long, Task<R>> taskRegistry = new ConcurrentHashMap<Long, Task<R>>();
-	private BlockingQueue<Task<R>> assignedTasks ;
+	private BlockingQueue<Task<R>> assignedTasks = new LinkedBlockingQueue<Task<R>>();
 	
 	private boolean isRunning = false;
 	
-
 	private int numDispatched =0;
 	private int numCollected = 0;
 	
-	public Proxy(Computer<R> computer, Capabilities spec, int computerId, BlockingQueue<Task<R>> taskPool, ProxyCallback<R> callback) throws RemoteException{
+	public ProxyImp(Computer<R> computer, Capabilities spec, int computerId, ProxyCallback<R> callback) throws RemoteException{
 		this.id = computerId;
 		this.computer = computer;
 		this.spec = spec;
 		this.collector = new Collector();
 		this.dispatcher = new Dispatcher();
 		this.callback = callback;
-		this.assignedTasks = taskPool;
 		
 		isRunning = true;
 		collector.start();
@@ -54,6 +55,7 @@ public class Proxy<R> {
 		callback.doOnError(id, taskRegistry.values());
 	}
 	
+	@Override
 	public void updateState(SharedState updatedState, boolean force) {
 		if(isRunning) try {
 			computer.updateState(updatedState, force);
@@ -63,16 +65,32 @@ public class Proxy<R> {
 		}
 	}
 
-	public int getId(){ return id;}
-	
-	public int getNumDispatched() {	return numDispatched; }
 
-	public int getNumCollected() { return numCollected; }
+	@Override
+	public Capabilities getCapabilities() { return spec; }
+
+	@Override
+	public void assignTask(Task<R> task) throws ProxyStoppedException{
+		if(!isRunning) throw new ProxyStoppedException("Computer is already stopped");
+		assignedTasks.add(task);
+	}
+
+	@Override
+	public boolean isBufferFull() {
+		return spec.getBufferSize() < assignedTasks.size();
+	}
+	
+	@Override
+	public int getId(){ return id;}
 	
 	@Override
 	public String toString() {
 		return "Computer - "+spec.getNumberOfThreads()+" threads as ID: '"+id+"'";
 	}
+	
+	public int getNumDispatched() {	return numDispatched; }
+
+	public int getNumCollected() { return numCollected; }
 	
 	private class Dispatcher extends Thread {
 		
@@ -104,4 +122,5 @@ public class Proxy<R> {
 			catch (RemoteException e)		{stopProxyWithError(); return;}
 		}
 	}
+
 }

@@ -8,13 +8,15 @@ import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.SynchronousQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Log;
 import api.Capabilities;
 import api.Computer;
+import api.Proxy;
 import api.ProxyCallback;
 import api.Result;
+import api.Scheduler;
 import api.SharedState;
 import api.Space;
 import api.Task;
@@ -26,21 +28,19 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 
 	private static final int STATUS_OUTPUT_INTERVAL = 1000;
 	
-	private static final long SOLUTION_UID = 0;
-	private static long UID_POOL = SOLUTION_UID+1;	
-	
-	private static final int LOCAL_PROXY_ID = 0;
-	private static int PROXY_ID_POOL = LOCAL_PROXY_ID+1;
-
 	private static final boolean FORCE_STATE = true;
 	private static final boolean SUGGEST_STATE = false;
 	private static final int BUFFER_SIZE_OF_LOCAL_COMPUTER = 1;
+	private static final long SOLUTION_UID = 0;
+	
+	private long UID_POOL = SOLUTION_UID+1;	
+	private int PROXY_ID_POOL = 0;
 	
 	private Scheduler<R> scheduler;
-	private BlockingQueue<Result<R>> solution = new SynchronousQueue<Result<R>>();
+	private BlockingQueue<Result<R>> solution = new LinkedBlockingQueue<Result<R>>();
 	
 	private Map<Long, Task<R>> registeredTasks = new ConcurrentHashMap<Long, Task<R>>();
-	private Map<Integer, Proxy<R>> allProxies = new ConcurrentHashMap<Integer, Proxy<R>>();
+	private Map<Integer, ProxyImp<R>> allProxies = new ConcurrentHashMap<Integer, ProxyImp<R>>();
 	
 	private SharedState state = new StateBlank();
 
@@ -48,12 +48,10 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	
 	public SpaceImp(int numLocalThreads) throws RemoteException {
 		super();		
-		scheduler = new Scheduler<R>();	
-		scheduler.start();
 		new StatusPrinter().start();
 		int actualNumberOfThreadsToSet = numLocalThreads>0?numLocalThreads:1;
-		ComputeNodeSpec spec = new ComputeNodeSpec(BUFFER_SIZE_OF_LOCAL_COMPUTER, actualNumberOfThreadsToSet);
-		register(new ComputeNode<R>(spec), spec, LOCAL_PROXY_ID, scheduler.getShortTaskPool());
+		ComputeNodeSpec localSpec = new ComputeNodeSpec(BUFFER_SIZE_OF_LOCAL_COMPUTER, actualNumberOfThreadsToSet, true);
+		register(new ComputeNode<R>(localSpec), localSpec);
 	}
 
 	@Override
@@ -63,6 +61,11 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	
 	@Override
 	public void setTask(Task<R> task, SharedState initialState) throws RemoteException, InterruptedException {
+		setTask(task, initialState, new SchedulerDefault<R>());
+	}
+	
+	@Override
+	public void setTask(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException {
 		state = initialState;
 		totalRuntime = 0;
 				
@@ -73,7 +76,12 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
         
 		task.setTarget(SOLUTION_UID, 0);
 		registeredTasks.put(task.getUID(), task);
+		
+		if( scheduler != null) scheduler.stop();
+		scheduler = customScheduler;
+		scheduler.start();
 		scheduler.schedule(task);
+		scheduler.registerProxyPool(allProxies);
 	}
 
 	@Override
@@ -83,20 +91,18 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	
 	@Override
 	public int register(Computer<R> computer, Capabilities spec) throws RemoteException {
-		return register(computer, spec, PROXY_ID_POOL++, scheduler.getLongTaskPool()).getId();
-	}
-	
-	public Proxy<R> register(Computer<R> computer, Capabilities spec, int proxyID,  BlockingQueue<Task<R>> taskPool) throws RemoteException {
+		int proxyID = PROXY_ID_POOL++;
+		
 		computer.assignSpace(this, proxyID);
 		
-		Proxy<R> proxy = new Proxy<R>(computer, spec, proxyID, taskPool, proxyCallback);
+		ProxyImp<R> proxy = new ProxyImp<R>(computer, spec, proxyID, proxyCallback);
 		
 		System.out.println("Registering "+proxy);
 		proxy.updateState(state, FORCE_STATE);
 		allProxies.put(proxyID, proxy );
-		
-		return proxy;
+		return proxyID;
 	}
+	
 	
 	@Override
 	public void updateState(int originatorID, SharedState updatedState) throws RemoteException {
@@ -193,7 +199,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 				
 				String newOutput = "Progress: "+scheduler+" Computers:";
 				
-				for(Proxy<R> p: allProxies.values())
+				for(ProxyImp<R> p: allProxies.values())
 					newOutput+= " ["+p.getId()+":"+p.getNumDispatched()+"|"+p.getNumCollected()+"]";
 				if(!last.equals(newOutput)){
 					last = newOutput;
@@ -225,4 +231,5 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 
         //Log.close();
 	}
+
 }

@@ -6,5 +6,6 @@ public interface Capabilities extends Serializable {
 
 	int getNumberOfThreads();
 	int getBufferSize();
+	boolean isOnSpace();
 	
 }

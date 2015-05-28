@@ -123,7 +123,7 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 			System.out.println("Starting Computer on Space @ "+domain);
 
 			Space<Object> space = (Space<Object>) Naming.lookup( url );
-			ComputeNodeSpec spec = new ComputeNodeSpec(desiredNumThreads, desiredPrefetchBufferSize);
+			ComputeNodeSpec spec = new ComputeNodeSpec(desiredNumThreads, desiredPrefetchBufferSize, false);
 			Computer computer = new ComputeNode(spec);
 			int registeredID= space.register(computer, spec);
 			
