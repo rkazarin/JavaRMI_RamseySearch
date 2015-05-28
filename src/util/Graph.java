@@ -3,6 +3,9 @@ package util;
 
 public class Graph {
 
+    //true == 1 == red
+    //false == 0 == blue
+
     boolean [] graph; //will only hold the lower left triangle of the graph
     int size;
 
@@ -24,17 +27,17 @@ public class Graph {
 
     //create a graph one bigger than the one being passed in (will be used when we find a counter example
     //for n, and want to start with this counterexample for n+1
-    public Graph incrementGraph(Graph oldGraph){
+    public Graph incrementGraph(){
 
-        int newGraphSize = oldGraph.size + 1;
+        int newGraphSize = size + 1;
         Graph newGraph = new Graph(newGraphSize);
 
-        for(int i = 0; i < oldGraph.size; i++){
-            for(int j = 0; j < oldGraph.size; j++){
+        for(int i = 0; i < size; i++){
+            for(int j = 0; j < size; j++){
                 if(i == j){ //we don't care about the diagonal
                     continue;
                 }
-                boolean oldColor = oldGraph.getColor(i, j);
+                boolean oldColor = getColor(i, j);
                 newGraph.changeColor(i, j, oldColor);
             }
         }
@@ -69,5 +72,37 @@ public class Graph {
         int oneDCoord = ((i * (i - 1)) / 2) + j;
         graph[oneDCoord] = newColor;
     }
+
+    public int isCounterexample(){
+        //TODO
+        return 0;
+    }
+
+    public void printGraph(){
+        String graphString = "";
+
+        for(int i = 0; i < graph.length; i++){
+            for(int j = 0; j < graph.length; j++){
+                if(i == j){
+                    graphString += "- ";
+                    continue;
+                }
+                boolean color = getColor(i, j);
+                if(color) {
+                    graphString += "1 ";
+                } else {
+                    graphString += "0 ";
+                }
+            }
+
+            graphString += "\n";
+        }
+
+        System.out.println(graphString);
+    }
+
+
+
+
 
 }
