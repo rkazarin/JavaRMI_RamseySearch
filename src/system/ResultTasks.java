@@ -11,13 +11,11 @@ public class ResultTasks<R> implements Result<R> {
 	private double runTime;
 	private Task<R>[] tasks;
 	
-	private final long creatorId;
-	private final double criticalLength;
+	private long creatorId;
+	private double criticalLength;
 	
-	public ResultTasks(long creatorId, Task<R>[] tasks, double criticalLength) {
+	public ResultTasks(Task<R>[] tasks) {
 		this.tasks = tasks;
-		this.creatorId = creatorId;
-		this.criticalLength = criticalLength;
 	}
 
 	@Override
@@ -50,7 +48,11 @@ public class ResultTasks<R> implements Result<R> {
 	}
 
 	@Override
-	public double getCriticalLengthOfParents() {
-		return criticalLength;
-	}
+	public double getCriticalLengthOfParents() { return criticalLength; }
+
+	@Override
+	public void setCreatorID(long creatorId)	{ this.creatorId = creatorId;}
+	
+	@Override
+	public void setCriticalLength(double criticalLength) {	this.criticalLength = criticalLength;}
 }

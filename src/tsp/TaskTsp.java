@@ -52,11 +52,11 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 		currentState = (StateTsp)initialState;
 		
 		//Shortcut Computation
-		if(currentState.isBetterThan(fixedCitiesLength)) return new ResultValue<ChunkTsp>(getUID(), new ChunkTsp(fixedCities, Double.MAX_VALUE), this.getMaxCriticalLength());
+		if(currentState.isBetterThan(fixedCitiesLength)) return new ResultValue<ChunkTsp>(new ChunkTsp(fixedCities, Double.MAX_VALUE));
 
 		if(toPermute.size() <= BASIC_TSP_PROBLEM_SIZE){	
 			ChunkTsp best = solve(fixedCities,fixedCitiesLength, toPermute, callback);
-			return new ResultValue<ChunkTsp>(getUID(), best, this.getMaxCriticalLength());
+			return new ResultValue<ChunkTsp>(best);
 		}
 		else {
 			
@@ -89,7 +89,7 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 				tasks[i] = new TaskTsp(-1, i-1, new_fixedCities, newfixedCitiesLength, new_toPermute);
 			}
 
-			return new ResultTasks<ChunkTsp>(getUID(), tasks, this.getMaxCriticalLength());
+			return new ResultTasks<ChunkTsp>(tasks); 
 		}
 	}
 	

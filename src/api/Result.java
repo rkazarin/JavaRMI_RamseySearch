@@ -14,7 +14,12 @@ public interface Result<R> extends Serializable {
 	
 	void setRunTime(double d);
 	
+	void setCreatorID(long creatorId);
+	
+	void setCriticalLength(double criticalLength);
+	
 	long getTaskCreatorId();
 	
 	double getCriticalLengthOfParents();
 }
+

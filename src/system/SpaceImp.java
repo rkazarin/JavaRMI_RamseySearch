@@ -37,9 +37,9 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	private int PROXY_ID_POOL = 0;
 	
 	private Scheduler<R> scheduler;
-	private BlockingQueue<Result<R>> solution = new LinkedBlockingQueue<Result<R>>();
+	private BlockingQueue<Result<R>> solution;
+	private Map<Long, Task<R>> registeredTasks;
 	
-	private Map<Long, Task<R>> registeredTasks = new ConcurrentHashMap<Long, Task<R>>();
 	private Map<Integer, ProxyImp<R>> allProxies = new ConcurrentHashMap<Integer, ProxyImp<R>>();
 	
 	private SharedState state = new StateBlank();
@@ -66,6 +66,9 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	
 	@Override
 	public void setTask(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException {
+		solution = new LinkedBlockingQueue<Result<R>>();
+		registeredTasks = new ConcurrentHashMap<Long, Task<R>>();
+		
 		state = initialState;
 		totalRuntime = 0;
 				
@@ -144,7 +147,9 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 				
 				if(origin.getTargetUid() == SOLUTION_UID){
 					
-					ResultValue<R> terminalResult = new ResultValue<R>(SOLUTION_UID, result.getValue(), result.getCriticalLengthOfParents()+result.getRunTime());
+					ResultValue<R> terminalResult = new ResultValue<R>(result.getValue());
+					terminalResult.setCreatorID(SOLUTION_UID);
+					terminalResult.setCriticalLength(result.getCriticalLengthOfParents()+result.getRunTime());
 					terminalResult.setRunTime(totalRuntime);
 					
 					solution.add(terminalResult);

@@ -128,6 +128,8 @@ public abstract class TaskClosure<R> implements Task<R>{
 	public Result<R> call(SharedState currentState, UpdateStateCallback callback){
 		long clientStartTime = System.nanoTime();
 		Result<R> result = execute(currentState, callback);
+		result.setCreatorID(this.getUID());
+		result.setCriticalLength(this.getMaxCriticalLength());
 		result.setRunTime( (System.nanoTime() - clientStartTime) / 1000000.0 );
 		return result;
 	}

@@ -11,18 +11,13 @@ public class ResultValue<R> implements Result<R> {
 	private double runTime;
 	private final R value;
 
-	private final long creatorId;
-	private final double criticalLength;
+	private long creatorId;
+	private double criticalLength;
 	
-	public ResultValue(long creatorId, R value, double criticalLength){
+	public ResultValue(R value){
 		this.value = value;
-		this.creatorId = creatorId;
-		this.criticalLength = criticalLength;
 	}
 	
-	public ResultValue(ResultValue<R> toCopy, long newOriginID){
-		this(newOriginID, toCopy.value, toCopy.criticalLength);
-	}
 	
 	@Override
 	public Task<R>[] getTasks() {
@@ -50,8 +45,11 @@ public class ResultValue<R> implements Result<R> {
 	public long getTaskCreatorId()	{ return creatorId; }
 
 	@Override
-	public double getCriticalLengthOfParents() {
-		return criticalLength;
-	}
-
+	public double getCriticalLengthOfParents() { return criticalLength; }
+	
+	@Override
+	public void setCreatorID(long creatorId)	{ this.creatorId = creatorId;}
+	
+	@Override
+	public void setCriticalLength(double criticalLength) {	this.criticalLength = criticalLength;}
 }
