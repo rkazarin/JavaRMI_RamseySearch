@@ -1,52 +1,37 @@
 package ramsey;
 
-import java.util.ArrayList;
-import java.util.LinkedList;
-import java.util.List;
-
-import system.ResultTasks;
-import system.ResultValue;
 import system.TaskClosure;
+import util.Graph;
 import api.Result;
 import api.SharedState;
-import api.Task;
 import api.UpdateStateCallback;
 
-public class RamseyTask extends Task<RamseyChunk> {
+public class RamseyTask extends TaskClosure<RamseyChunk> {
 
-	private static final long serialVersionUID = -2567928535294012341L;
-	
-	private static final int BASIC_TSP_PROBLEM_SIZE = 11;
-	
-	int graphSize;
 
-	public RamseyTask(int graphSize){
+	private static final long serialVersionUID = 6673708275266440578L;
 
-        this.graphSize = graphSize;
-
+	public RamseyTask(Graph graph) {
+		super("Ramsey", 0, 0, false);
 	}
 
-	@SuppressWarnings("unchecked")
-	@Override
-	public Result<RamseyChunk> execute(SharedState initialState, UpdateStateCallback callback) {
-
-
+	public RamseyTask(String name, int priority, int numInputs,
+			boolean isShorRunning, long targetUid, int targetPort) {
+		super(name, priority, numInputs, isShorRunning, targetUid, targetPort);
+		// TODO Auto-generated constructor stub
 	}
-	
+
 	@Override
 	public void updateState(SharedState updatedState) {
-
+		// TODO Auto-generated method stub
+		
 	}
-
-
 
 	@Override
-	public String toString() {
-
+	protected Result<RamseyChunk> execute(SharedState currentState,
+			UpdateStateCallback callback) {
+		// TODO Auto-generated method stub
+		return null;
 	}
-	
-	private RamseyChunk solve(){
 
-
-	}
 }

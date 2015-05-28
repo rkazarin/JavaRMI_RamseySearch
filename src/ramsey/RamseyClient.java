@@ -1,5 +1,6 @@
 package ramsey;
 
+import util.Graph;
 import util.Log;
 import api.Result;
 import api.SharedState;
@@ -11,9 +12,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 public class RamseyClient {
-
-	/** Serial ID	 */
-	private static final long serialVersionUID = 6911008092238762097L;
 	
 	public RamseyClient() {
 
@@ -37,19 +35,11 @@ public class RamseyClient {
 
 		Log.log("Component, Time (ms)");
     
-		long clientStartTime = System.nanoTime();
-		
-		//SharedState initial = branchAndBound? new StateTsp(cities): new StateTspStatic(cities);
-		space.setTask( new RamseyTask(graphStartSize));
+		space.setTask( new RamseyTask( new Graph(6)), new TabooState(), new RamseyScheduler() );
 
-        //Will probably never get here...
-		Result<RamseyChunk> result =  space.getSolution();
-
+		while(true){
+			System.out.println(space.getSolution());
+		}
 		
-		Log.log("TSP, Result: "+result.getValue());
-		Log.log( "Client Time,"+( System.nanoTime() - clientStartTime) / 1000000.0 );
-		Log.log("T1, "+result.getRunTime());
-		Log.log("Tinf, "+result.getCriticalLengthOfParents());
-		Log.close();
 	}
 }
