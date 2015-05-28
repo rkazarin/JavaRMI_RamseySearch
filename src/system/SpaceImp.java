@@ -143,11 +143,11 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 			totalRuntime += result.getRunTime();
 			
 			//If Single value pass it on to target	
-			if(result.isValue()){
+			if(result.hasValue()){
 				
 				if(origin.getTargetUid() == SOLUTION_UID){
 					
-					ResultValue<R> terminalResult = new ResultValue<R>(result.getValue());
+					Result<R> terminalResult = new Result<R>(result.getValue());
 					terminalResult.setCreatorID(SOLUTION_UID);
 					terminalResult.setCriticalLength(result.getCriticalLengthOfParents()+result.getRunTime());
 					terminalResult.setRunTime(totalRuntime);
@@ -162,8 +162,8 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 
 			}
 		
-			//Else Add newly created tasks to waitlist 
-			else{
+			//Add newly created tasks to waitlist 
+			if(result.hasTasks()){
 				Task<R>[] tasksToAdd = result.getTasks();
 				
 				//First add all new tasks and generate UIDs for them

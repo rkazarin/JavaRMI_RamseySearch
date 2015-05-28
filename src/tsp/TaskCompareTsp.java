@@ -1,6 +1,5 @@
 package tsp;
 
-import system.ResultValue;
 import system.TaskClosure;
 import api.Result;
 import api.SharedState;
@@ -26,7 +25,7 @@ public class TaskCompareTsp extends TaskClosure<ChunkTsp>{
 		}
 		
 		callback.updateState(new StateTsp(bestChunk.getBestLength()));
-		return new ResultValue<ChunkTsp>(bestChunk);
+		return new Result<ChunkTsp>(bestChunk);
 	}
 
 	@Override

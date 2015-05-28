@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
 
-import system.ResultTasks;
-import system.ResultValue;
 import system.TaskClosure;
 import api.Result;
 import api.SharedState;
@@ -52,11 +50,11 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 		currentState = (StateTsp)initialState;
 		
 		//Shortcut Computation
-		if(currentState.isBetterThan(fixedCitiesLength)) return new ResultValue<ChunkTsp>(new ChunkTsp(fixedCities, Double.MAX_VALUE));
+		if(currentState.isBetterThan(fixedCitiesLength)) return new Result<ChunkTsp>(new ChunkTsp(fixedCities, Double.MAX_VALUE));
 
 		if(toPermute.size() <= BASIC_TSP_PROBLEM_SIZE){	
 			ChunkTsp best = solve(fixedCities,fixedCitiesLength, toPermute, callback);
-			return new ResultValue<ChunkTsp>(best);
+			return new Result<ChunkTsp>(best);
 		}
 		else {
 			
@@ -89,7 +87,7 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 				tasks[i] = new TaskTsp(-1, i-1, new_fixedCities, newfixedCitiesLength, new_toPermute);
 			}
 
-			return new ResultTasks<ChunkTsp>(tasks); 
+			return new Result<ChunkTsp>(tasks); 
 		}
 	}
 	
