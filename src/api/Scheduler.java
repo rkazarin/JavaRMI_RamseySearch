@@ -6,13 +6,19 @@ import system.ProxyImp;
 
 public interface Scheduler<R>{
 
-	public abstract void schedule(Task<R> task);
+	void schedule(Task<R> task);
 
-	public abstract void registerProxyPool( Map<Integer, ProxyImp<R>> proxies );
+	void scheduleInitial(Task<R> task);
+
+	Result<R> getSolution() throws InterruptedException;
+	
+	void processResult(Result<R> result);
+	
+	void registerProxyPool( Map<Integer, ProxyImp<R>> proxies );
 	
 	//Should not be blocking!!!
-	public abstract void start();
+	void start();
 	
-	public abstract void stop();
+	void stop();
 
 }

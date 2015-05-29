@@ -1,28 +1,10 @@
 package ramsey;
 
-import java.util.Map;
+import system.SchedulerCore;
 
-import system.ProxyImp;
-import api.Scheduler;
-import api.Task;
+public class RamseyScheduler extends SchedulerCore<Graph> {
 
-public class RamseyScheduler implements Scheduler<Graph> {
 
-	public RamseyScheduler() {
-		// TODO Auto-generated constructor stub
-	}
-
-	@Override
-	public void schedule(Task<Graph> task) {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public void registerProxyPool(Map<Integer, ProxyImp<Graph>> proxies) {
-		// TODO Auto-generated method stub
-		
-	}
 
 	@Override
 	public void start() {

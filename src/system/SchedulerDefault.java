@@ -1,32 +1,25 @@
 package system;
 
-import java.util.Map;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
 import api.Proxy;
 import api.ProxyStoppedException;
-import api.Scheduler;
 import api.Task;
 
-public class SchedulerDefault<R> implements Scheduler<R> {
-	
+public class SchedulerDefault<R> extends SchedulerCore<R> {
+
 	private static final int INITIAL_CAPACITY = 25000;
 	
-	private BlockingQueue<Task<R>> waitingTasks = new LinkedBlockingQueue<Task<R>>();
 	private PriorityBlockingQueue<Task<R>> shortTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
 	private PriorityBlockingQueue<Task<R>> longTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
 	
-	private Map<Integer, ProxyImp<R>> proxies = new ConcurrentHashMap<Integer, ProxyImp<R>>();
 	private boolean isRunning = false;
+
 	
-	@Override
-	public void schedule(Task<R> task){
-		waitingTasks.add(task);
+	public SchedulerDefault() {
+		// TODO Auto-generated constructor stub
 	}
-	
+
 	
 	@Override
 	public void start() {
@@ -35,7 +28,6 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 		new Thread(sorter).start();
 		new Thread(shortAssigner).start();
 		new Thread(longAssigner).start();
-		
 	}
 	
 	@Override
@@ -44,14 +36,11 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	}
 
 	@Override
-	public void registerProxyPool(Map<Integer, ProxyImp<R>> proxies) {
-		this.proxies = proxies;
-	}
-	
-	@Override
 	public String toString() {
 		return longTaskPool.size()+" remote, "+shortTaskPool.size()+" local, "+waitingTasks.size()+" waiting ";
 	}
+	
+
 
 	private Runnable sorter = new Runnable() {
 		@Override
@@ -115,5 +104,5 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 			}	
 		}
 	};
-		
+
 }

@@ -6,9 +6,7 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.Map;
-import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Log;
 import api.Capabilities;
@@ -31,21 +29,15 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	private static final boolean FORCE_STATE = true;
 	private static final boolean SUGGEST_STATE = false;
 	private static final int BUFFER_SIZE_OF_LOCAL_COMPUTER = 1;
-	private static final long SOLUTION_UID = 0;
-	
-	private long UID_POOL = SOLUTION_UID+1;	
+		
 	private int PROXY_ID_POOL = 0;
 	
 	private Scheduler<R> scheduler;
-	private BlockingQueue<Result<R>> solution;
-	private Map<Long, Task<R>> registeredTasks;
 	
 	private Map<Integer, ProxyImp<R>> allProxies = new ConcurrentHashMap<Integer, ProxyImp<R>>();
 	
 	private SharedState state = new StateBlank();
 
-	private double totalRuntime = 0;
-	
 	public SpaceImp(int numLocalThreads) throws RemoteException {
 		super();		
 		new StatusPrinter().start();
@@ -66,34 +58,24 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	
 	@Override
 	public void setTask(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException {
-		solution = new LinkedBlockingQueue<Result<R>>();
-		registeredTasks = new ConcurrentHashMap<Long, Task<R>>();
-		
 		state = initialState;
-		totalRuntime = 0;
+		
 				
 		for(Proxy<R> p: allProxies.values()){
 			p.updateState(state, FORCE_STATE);
 		}
 		
-		if(task != null){
-			task.setUid(UID_POOL++);
-			
-			task.setTarget(SOLUTION_UID, 0);
-			registeredTasks.put(task.getUID(), task);
-			
-		}
-
+		
 		if( scheduler != null) scheduler.stop();
 		scheduler = customScheduler;
 		scheduler.start();
-		scheduler.schedule(task);
+		scheduler.scheduleInitial(task);
 		scheduler.registerProxyPool(allProxies);
 	}
 
 	@Override
 	public Result<R> getSolution() throws RemoteException, InterruptedException {
-		return solution.take();
+		return scheduler.getSolution();
 	}
 	
 	@Override
@@ -141,60 +123,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 
 		@Override
 		public synchronized void processResult(Result<R> result) {
-
-			Task<R> origin = registeredTasks.get(result.getTaskCreatorId()); //registeredTasks.remove(result.getTaskCreatorId());
-			
-			totalRuntime += result.getRunTime();
-			
-			//If Single value pass it on to target	
-			if(result.hasValue()){
-				
-				if(origin.getTargetUid() == SOLUTION_UID){
-					
-					Result<R> terminalResult = new Result<R>(result.getValue());
-					terminalResult.setCreatorID(SOLUTION_UID);
-					terminalResult.setCriticalLength(result.getCriticalLengthOfParents()+result.getRunTime());
-					terminalResult.setRunTime(totalRuntime);
-					
-					solution.add(terminalResult);
-				}
-				else {
-					Task<R> target = registeredTasks.get(origin.getTargetUid());
-					target.setInput(origin.getTargetPort(), result.getValue());
-					target.addCriticalLengthOfParent(result.getCriticalLengthOfParents() + result.getRunTime());
-				}
-
-			}
-		
-			//Add newly created tasks to waitlist 
-			if(result.hasTasks()){
-				Task<R>[] tasksToAdd = result.getTasks();
-				
-				//First add all new tasks and generate UIDs for them
-				for(Task<R> t: tasksToAdd){
-					t.setUid(UID_POOL++);
-					t.addCriticalLengthOfParent(result.getCriticalLengthOfParents() + result.getRunTime());
-				}
-				
-				/*
-				 * Tasks can reference other tasks in the set via a negative UID.
-				 * For example to set the target to another element in the set
-				 * -1 would set to the 0th element
-				 * -2 would set to the 1st element
-				 * etc..
-				 */
-				for(Task<R> t: tasksToAdd){
-					
-					long targetUid = t.getTargetUid();
-					if(targetUid <0){
-						Task<R> realTarget = tasksToAdd[ Math.abs((int)targetUid)-1];
-						t.setTarget(realTarget.getUID(), t.getTargetPort());
-					}
-					
-					registeredTasks.put(t.getUID(), t);
-					scheduler.schedule(t);
-				}
-			}
+			scheduler.processResult(result);
 		}
 	};
 	
