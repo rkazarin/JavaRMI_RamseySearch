@@ -8,12 +8,13 @@ public class ComputeNodeSpec implements Capabilities{
 	private static final int BUFFER_DEFAULT_SIZE = 5;
 	
 	private final int numThreads,prefetchBufferSize;
-	private final boolean isOnSpace;
+	private final boolean isLongRunning, isOnSpace;
 	
-	public ComputeNodeSpec(int desiredNumThreads, int desiredPrefetchBufferSize, boolean isOnSpace) {
-		numThreads = desiredNumThreads>0?desiredNumThreads:Runtime.getRuntime().availableProcessors();
-		prefetchBufferSize = desiredPrefetchBufferSize>0?desiredPrefetchBufferSize:BUFFER_DEFAULT_SIZE;
+	public ComputeNodeSpec(int desiredNumThreads, int desiredPrefetchBufferSize, boolean isOnSpace, boolean isLongRunning) {
+		this.numThreads = desiredNumThreads>0?desiredNumThreads:Runtime.getRuntime().availableProcessors();
+		this.prefetchBufferSize = desiredPrefetchBufferSize>0?desiredPrefetchBufferSize:BUFFER_DEFAULT_SIZE;
 		this.isOnSpace = isOnSpace;
+		this.isLongRunning = isLongRunning;
 	}
 
 	@Override
@@ -24,5 +25,11 @@ public class ComputeNodeSpec implements Capabilities{
 
 	@Override
 	public boolean isOnSpace()		{ return isOnSpace;}
+
+	@Override
+	public boolean isLongRunning() {
+		// TODO Auto-generated method stub
+		return false;
+	}
 
 }

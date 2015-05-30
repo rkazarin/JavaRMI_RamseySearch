@@ -42,7 +42,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		super();		
 		new StatusPrinter().start();
 		int actualNumberOfThreadsToSet = numLocalThreads>0?numLocalThreads:1;
-		ComputeNodeSpec localSpec = new ComputeNodeSpec(BUFFER_SIZE_OF_LOCAL_COMPUTER, actualNumberOfThreadsToSet, true);
+		ComputeNodeSpec localSpec = new ComputeNodeSpec(BUFFER_SIZE_OF_LOCAL_COMPUTER, actualNumberOfThreadsToSet, ComputeNode.RUNS_ON_SPACE, ComputeNode.SHORT_RUNNING);
 		register(new ComputeNode<R>(localSpec), localSpec);
 	}
 

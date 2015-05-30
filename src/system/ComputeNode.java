@@ -22,6 +22,12 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 
 	private static final long serialVersionUID = -4962774042291137071L;
 	
+	public static final boolean RUNS_ON_SPACE = true;
+	public static final boolean RUNS_INDEPENDENTLY = false;
+	public static final boolean LONG_RUNNING = true;
+	public static final boolean SHORT_RUNNING = false;
+	
+
 	private int id = -1;
 	private transient BlockingQueue<Task<R>> tasks;
 	private transient BlockingQueue<Result<R>> results;
@@ -124,6 +130,8 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 		String domain = (args.length > 0)? args[0]: "localhost";
 		int desiredPrefetchBufferSize = (args.length > 1)? Integer.parseInt(args[1]): -1;
 		int desiredNumThreads = (args.length > 2)? Integer.parseInt(args[2]): -1;
+		boolean isLongRunning = (args.length > 3)? Boolean.parseBoolean(args[3]): LONG_RUNNING;
+		
 		
 		String url = "rmi://" + domain + ":" + Space.DEFAULT_PORT + "/" + Space.DEFAULT_NAME;
 		
@@ -131,7 +139,7 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 			System.out.println("Starting Computer on Space @ "+domain);
 
 			Space<Object> space = (Space<Object>) Naming.lookup( url );
-			ComputeNodeSpec spec = new ComputeNodeSpec(desiredNumThreads, desiredPrefetchBufferSize, false);
+			ComputeNodeSpec spec = new ComputeNodeSpec(desiredNumThreads, desiredPrefetchBufferSize, RUNS_INDEPENDENTLY, isLongRunning);
 			Computer computer = new ComputeNode(spec);
 			int registeredID= space.register(computer, spec);
 			
