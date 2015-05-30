@@ -1,10 +1,11 @@
 package api;
 
+import java.io.Serializable;
 import java.util.Map;
 
 import system.ProxyImp;
 
-public interface Scheduler<R>{
+public interface Scheduler<R> extends Serializable{
 
 	void schedule(Task<R> task);
 
