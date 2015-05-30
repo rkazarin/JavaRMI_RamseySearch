@@ -85,8 +85,22 @@ public class RamseyScheduler implements Scheduler<Graph> {
 		Capabilities spec = proxy.getCapabilities();
 		if(spec.isOnSpace()) return null; //dont schedule on space
 		if(proxy.isBufferFull()) return null;
-		
-		return new RamseyTask(new Graph(10), 30);	
+
+        RamseyTask toReturn = null;
+
+        try {
+            if(!spec.isLongRunning()){
+                toReturn =  new RamseyTask(store.getBest(25), 25);
+
+            } else{
+                toReturn =  new RamseyTask(store.getBest(1000), 50);
+            }
+        } catch (RemoteException e) {
+            e.printStackTrace();
+        }
+
+        return toReturn;
+
 	}
 
 	@Override

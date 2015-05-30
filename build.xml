@@ -27,7 +27,7 @@
     <jar jarfile="${dist}/computer.jar" basedir="${build}" includes="system/** api/** util/**">
     </jar>
     <!-- Make client jar file -->
-    <jar jarfile="${dist}/client.jar" basedir="${build}" includes="client/** api/** tsp/** util/**">
+    <jar jarfile="${dist}/client.jar" basedir="${build}" includes="client/** api/** tsp/** ramsey/** util/**">
     </jar>
     <jar jarfile="${dist}/space.jar" basedir="${build}" includes="system/** api/**"/>
     <jar jarfile="${dist}/tasks-dl.jar" basedir="${build}" includes="tasks/** api**"/>
@@ -39,6 +39,7 @@
       <arg value="${arg0}"/>
       <arg value="${arg1}"/>
       <arg value="${arg2}"/>
+      <arg value="${arg3}"/>
       <jvmarg value="-Djava.security.policy=policy/policy"/>
       <jvmarg value="-Xmx1g"/>
       <classpath>
@@ -58,16 +59,27 @@
   </target>
 
   <target name="runRamseyClient" description="run ramsey client" >
-    <java classpath="${build}" classname="tsp.ClientTsp" fork="true">
+    <java classpath="${build}" classname="ramsey.RamseyClient" fork="true">
       <arg value="${arg0}"/>
       <arg value="${arg1}"/>
-      <arg value="${arg2}"/>
       <jvmarg value="-Djava.security.policy=policy/policy"/>
       <classpath>
         <pathelement location="dist/client.jar"/>
       </classpath>
     </java>
   </target>
+
+    <target name="runTspClient" description="run tsp client" >
+        <java classpath="${build}" classname="tsp.ClientTsp" fork="true">
+            <arg value="${arg0}"/>
+            <arg value="${arg1}"/>
+            <arg value="${arg3}"/>
+            <jvmarg value="-Djava.security.policy=policy/policy"/>
+            <classpath>
+                <pathelement location="dist/client.jar"/>
+            </classpath>
+        </java>
+    </target>
 
   <target name="clean" description="clean up" >
     <!-- Delete the ${build} and ${dist} directory trees -->
