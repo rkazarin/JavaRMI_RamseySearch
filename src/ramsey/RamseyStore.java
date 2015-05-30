@@ -104,7 +104,11 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 		File bankTempFile = new File(BANK_FILENAME+TEMP_EXTENSION);
 		
 		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(bankTempFile));
-		out.writeObject(map);
+		
+		synchronized (map) {
+			out.writeObject(map);
+		}
+		
 		out.close();
 
 		//Move temp to permanent
@@ -159,6 +163,7 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 				while(true) try {
 					Thread.sleep(CHECKPOINT_SAVE_INTERVAL);
 					store.save();
+					System.out.println("Checkpoint Saved");
 				}
 				catch (InterruptedException e) {} 
 				catch (IOException e) {

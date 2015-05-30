@@ -90,7 +90,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
 
         try {
             if(!spec.isLongRunning()){
-                toReturn =  new RamseyTask(store.getBest(25), 25);
+                toReturn =  new RamseyTask(store.getBest(20), 25);
 
             } else{
                 toReturn =  new RamseyTask(store.getBest(1000), 50);
