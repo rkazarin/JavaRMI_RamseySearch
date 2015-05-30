@@ -1,4 +1,4 @@
-package ramsey.mine;
+package ramsey;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -15,9 +15,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.UUID;
 
-import ramsey.Graph;
-
-public class Bank implements Serializable, Iterable<Graph>{
+public class GraphStore implements Serializable, Iterable<Graph>{
 
 	private static final long serialVersionUID = 8867753203624856389L;
 
@@ -34,7 +32,7 @@ public class Bank implements Serializable, Iterable<Graph>{
 	private transient List<Graph>[] hierarchy = new List[GRAPH_LESS_THAN];
 	private Map<UUID,Graph> map = new HashMap<>();
 	
-	public Bank() {
+	public GraphStore() {
 		for(int i=0; i<hierarchy.length; i++){
 			hierarchy[i]= new LinkedList<Graph>();
 		}

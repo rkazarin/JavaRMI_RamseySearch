@@ -32,9 +32,11 @@ public class RamseyTask extends TaskClosure<Graph> {
 		do{
 			isSolved = findCounterExample(current, callback);
 			 
-			if(!isSolved){ 
+			if(isSolved)
+				callback.producePartialResult(new Result<Graph>(current));
+			else
 				throw new Exception("No solution found for size "+current.size());
-			}
+			
 			
 			//Send Solution
 			callback.producePartialResult( new Result<Graph>(current) );
@@ -44,7 +46,7 @@ public class RamseyTask extends TaskClosure<Graph> {
 		}
 		while(current.size() <= graphComputationLimit);
 
-		return null;
+		return new Result<Graph>(current);
 	}
 	
 	private boolean findCounterExample(Graph g, ComputerCallback<Graph> callback)  throws Exception{
@@ -113,7 +115,7 @@ public class RamseyTask extends TaskClosure<Graph> {
 			 */
 			count = g.cliqueCount();
 			taboo.add(best_i,best_j);
-			callback.updateState(taboo);
+			
 	
 			/*
 			System.out.println("size: "+g.size()+"\t"
