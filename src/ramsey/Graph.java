@@ -141,16 +141,7 @@ public class Graph implements Comparable<Graph>, Serializable{
 									   value_i_j == get(k,m) && 
 									   value_i_j == get(l,m) )
 									{
-									  for(int n=m+1; n< size-SUB_GRAPH_SIZE+6;n++) {
-										  if( value_i_j == get(i,n) && 
-										      value_i_j == get(j,n) &&
-										      value_i_j == get(k,n) && 
-										      value_i_j == get(l,n) &&
-										      value_i_j == get(m,n) )
-										  {
-											  count++;
-										  }
-									  }
+                                        count++;
 									}
 								}
 							}
