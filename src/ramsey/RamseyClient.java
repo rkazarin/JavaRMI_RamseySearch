@@ -10,33 +10,26 @@ import api.Space;
 
 public class RamseyClient {
 	
-	public RamseyClient() {
-
-	}
-
     @SuppressWarnings("unchecked")
 	public static void main(String[] args) throws RemoteException, InterruptedException, MalformedURLException, NotBoundException {
-		String domain = (args.length > 0)? args[0] : "localhost";
-		int graphStartSize = (args.length > 1)? Integer.parseInt(args[1]) : 10;
+		String spaceIp = (args.length > 0)? args[0] : "localhost";
+		String storeIp = (args.length > 0)? args[0] : "localhost";
+		
+		String spaceUrl = "rmi://" + spaceIp + ":" + Space.DEFAULT_PORT + "/" + Space.DEFAULT_NAME;
+		String storeUrl = "rmi://" + storeIp + ":" + Store.DEFAULT_PORT + "/" + Store.DEFAULT_NAME;
 		
 		Log.startLog("ramsey-client.csv");
-		System.out.println("Starting Client Targeting Space @ "+domain);
-
-		String url = "rmi://" + domain + ":" + Space.DEFAULT_PORT + "/" + Space.DEFAULT_NAME;
+		System.out.println("Starting Client");
+		System.out.println("\tTargeting Space: "+spaceUrl);
+		System.out.println("\tTargeting Store: "+storeUrl);
 		
-		Space<Graph> space = (Space<Graph>) Naming.lookup(url);
+		Space<Graph> space = (Space<Graph>) Naming.lookup(spaceUrl);
+		space.setTask( null , new SharedTabooList(), new RamseyScheduler(storeUrl) );
 
-		//RamseyClient client = new RamseyClient(graphStartSize);
+		System.out.println("\nSolutions:\n");
 		
-		System.out.println("Start graph size:\t"+graphStartSize);
-
-		Log.log("Component, Time (ms)");
-    
-		space.setTask( null , new SharedTabooList(), new RamseyScheduler() );
-
 		while(true){
 			System.out.println(space.getSolution());
-		}
-		
+		}	
 	}
 }

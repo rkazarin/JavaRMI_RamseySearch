@@ -56,8 +56,6 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		setTask(task, initialState, new SchedulerDefault<R>());
 	}
 	
-	
-	
 	@Override
 	public void setTask(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException {
 		state = initialState;

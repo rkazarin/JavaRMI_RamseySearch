@@ -27,9 +27,6 @@ public class ComputeNodeSpec implements Capabilities{
 	public boolean isOnSpace()		{ return isOnSpace;}
 
 	@Override
-	public boolean isLongRunning() {
-		// TODO Auto-generated method stub
-		return false;
-	}
+	public boolean isLongRunning()	{ return isLongRunning;}
 
 }
