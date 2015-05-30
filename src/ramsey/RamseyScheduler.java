@@ -6,8 +6,6 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
 
 import system.ProxyImp;
 import api.Capabilities;
@@ -24,10 +22,10 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	private String graphStoreAddress;
 	private static final int GRAPH_STORE_LOOKUP_TIMEOUT = 1000;
 	
-	private transient Map<Integer, ProxyImp<Graph>> proxies = new ConcurrentHashMap<Integer, ProxyImp<Graph>>();
-	private transient BlockingQueue<Result<Graph>> solution = new LinkedBlockingQueue<Result<Graph>>();
+	private transient Map<Integer, ProxyImp<Graph>> proxies;
+	private transient BlockingQueue<Result<Graph>> solution;
 	
-	private transient Store store;	
+	private transient GraphStore store;	
 	private transient boolean isRunning = false;
 	
 	public RamseyScheduler(String graphStoreAddress) {
@@ -41,7 +39,9 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	public void schedule(Task<Graph> task) {}
 	
 	@Override
-	public void start() {
+	public void start(Map<Integer, ProxyImp<Graph>> proxies, BlockingQueue<Result<Graph>> solution) {
+		this.proxies = proxies;
+		this.solution = solution;
 		isRunning = true;
 		
 		findAndSetStore();
@@ -56,7 +56,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	
 	private void findAndSetStore(){
 		while(isRunning) try {
-			store = (Store) Naming.lookup(graphStoreAddress);
+			store = (GraphStore) Naming.lookup(graphStoreAddress);
 			break;
 		} catch (MalformedURLException | RemoteException | NotBoundException e) {
 			System.err.println("Unable to connect to Graph Store at '"+graphStoreAddress+"' retrying in "+GRAPH_STORE_LOOKUP_TIMEOUT+" ms");
@@ -107,15 +107,4 @@ public class RamseyScheduler implements Scheduler<Graph> {
 			catch (InterruptedException e1) {}
 		}
 	}
-
-	@Override
-	public Result<Graph> getSolution() throws InterruptedException {
-		return solution.take();
-	}
-	
-	@Override
-	public void registerProxyPool(Map<Integer, ProxyImp<Graph>> proxies) {
-		this.proxies = proxies;
-	}
-
 }

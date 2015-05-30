@@ -6,7 +6,9 @@ import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Collection;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import util.Log;
 import api.Capabilities;
@@ -34,6 +36,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	
 	private Scheduler<R> scheduler;
 	
+	protected BlockingQueue<Result<R>> solution = new LinkedBlockingQueue<Result<R>>();
 	private Map<Integer, ProxyImp<R>> allProxies = new ConcurrentHashMap<Integer, ProxyImp<R>>();
 	
 	private SharedState state = new StateBlank();
@@ -59,23 +62,20 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	@Override
 	public void setTask(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException {
 		state = initialState;
-		
 				
 		for(Proxy<R> p: allProxies.values()){
 			p.updateState(state, FORCE_STATE);
 		}
 		
-		
 		if( scheduler != null) scheduler.stop();
 		scheduler = customScheduler;
-		scheduler.start();
+		scheduler.start(allProxies, solution);
 		scheduler.scheduleInitial(task);
-		scheduler.registerProxyPool(allProxies);
 	}
 
 	@Override
 	public Result<R> getSolution() throws RemoteException, InterruptedException {
-		return scheduler.getSolution();
+		return solution.take();
 	}
 	
 	@Override
@@ -127,8 +127,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		}
 	};
 	
-	class StatusPrinter extends Thread{
-		
+	class StatusPrinter extends Thread {
 		String last = "";
 		@Override
 		public void run() {

@@ -5,10 +5,10 @@ import java.util.LinkedList;
 import java.util.List;
 
 import system.TaskClosure;
+import api.ComputerCallback;
 import api.Result;
 import api.SharedState;
 import api.Task;
-import api.ComputerCallback;
 
 public class TaskTsp extends TaskClosure<ChunkTsp> {
 
@@ -46,7 +46,7 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 
 	@SuppressWarnings("unchecked")
 	@Override
-	public Result<ChunkTsp> execute(SharedState initialState, ComputerCallback callback) {	
+	public Result<ChunkTsp> execute(SharedState initialState, ComputerCallback<ChunkTsp> callback) {	
 		currentState = (StateTsp)initialState;
 		
 		//Shortcut Computation
@@ -110,7 +110,7 @@ public class TaskTsp extends TaskClosure<ChunkTsp> {
 		return out+" >["+targetUid+"]";
 	}
 	
-	private ChunkTsp solve(final List<Integer> fixedCities, final double fixedCitiesLength, final List<Integer> toPermute,  ComputerCallback callback){
+	private ChunkTsp solve(final List<Integer> fixedCities, final double fixedCitiesLength, final List<Integer> toPermute,  ComputerCallback<ChunkTsp> callback){
 	
 		if(toPermute.size() == 0){
 			

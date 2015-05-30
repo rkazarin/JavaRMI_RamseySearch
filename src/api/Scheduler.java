@@ -2,6 +2,7 @@ package api;
 
 import java.io.Serializable;
 import java.util.Map;
+import java.util.concurrent.BlockingQueue;
 
 import system.ProxyImp;
 
@@ -11,14 +12,10 @@ public interface Scheduler<R> extends Serializable{
 
 	void scheduleInitial(Task<R> task);
 
-	Result<R> getSolution() throws InterruptedException;
-	
 	void processResult(Result<R> result);
 	
-	void registerProxyPool( Map<Integer, ProxyImp<R>> proxies );
-	
 	//Should not be blocking!!!
-	void start();
+	void start(Map<Integer, ProxyImp<R>> proxies, BlockingQueue<Result<R>> solution);
 	
 	void stop();
 

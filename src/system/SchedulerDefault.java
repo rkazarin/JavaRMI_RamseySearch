@@ -21,9 +21,8 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 
 	private static final int INITIAL_CAPACITY = 25000;
 
-	protected Map<Integer, ProxyImp<R>> proxies = new ConcurrentHashMap<Integer, ProxyImp<R>>();
-	
-	protected BlockingQueue<Result<R>> solution = new LinkedBlockingQueue<Result<R>>();
+	protected BlockingQueue<Result<R>> solution;
+	protected Map<Integer, ProxyImp<R>> proxies;
 	
 	protected Map<Long, Task<R>> registeredTasks = new ConcurrentHashMap<Long, Task<R>>();
 	protected BlockingQueue<Task<R>> waitingTasks = new LinkedBlockingQueue<Task<R>>();
@@ -31,19 +30,8 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	private PriorityBlockingQueue<Task<R>> shortTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
 	private PriorityBlockingQueue<Task<R>> longTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
 	
-	private boolean isRunning = false;
-	
+	private boolean isRunning = false;	
 	private double totalRuntime = 0;
-	
-	@Override
-	public void registerProxyPool(Map<Integer, ProxyImp<R>> proxies) {
-		this.proxies = proxies;
-	}
-	
-	@Override
-	public Result<R> getSolution() throws InterruptedException {
-		return solution.take();
-	}
 	
 	@Override
 	public void scheduleInitial(Task<R> task){
@@ -86,7 +74,6 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 				target.setInput(origin.getTargetPort(), result.getValue());
 				target.addCriticalLengthOfParent(result.getCriticalLengthOfParents() + result.getRunTime());
 			}
-
 		}
 	
 		//Add newly created tasks to waitlist 
@@ -121,7 +108,10 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	}
 	
 	@Override
-	public void start() {
+	public void start(Map<Integer, ProxyImp<R>> proxies, BlockingQueue<Result<R>> solution) {
+		this.proxies = proxies;
+		this.solution = solution;
+		
 		isRunning = true;
 		
 		new Thread(sorter).start();
@@ -138,8 +128,6 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	public String toString() {
 		return longTaskPool.size()+" remote, "+shortTaskPool.size()+" local, "+waitingTasks.size()+" waiting ";
 	}
-	
-
 
 	private Runnable sorter = new Runnable() {
 		@Override

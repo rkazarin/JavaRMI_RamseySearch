@@ -16,7 +16,7 @@ public class RamseyClient {
 		String storeIp = (args.length > 0)? args[0] : "localhost";
 		
 		String spaceUrl = "rmi://" + spaceIp + ":" + Space.DEFAULT_PORT + "/" + Space.DEFAULT_NAME;
-		String storeUrl = "rmi://" + storeIp + ":" + Store.DEFAULT_PORT + "/" + Store.DEFAULT_NAME;
+		String storeUrl = "rmi://" + storeIp + ":" + GraphStore.DEFAULT_PORT + "/" + GraphStore.DEFAULT_NAME;
 		
 		Log.startLog("ramsey-client.csv");
 		System.out.println("Starting Client");

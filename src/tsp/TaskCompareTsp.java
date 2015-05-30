@@ -1,9 +1,9 @@
 package tsp;
 
 import system.TaskClosure;
+import api.ComputerCallback;
 import api.Result;
 import api.SharedState;
-import api.ComputerCallback;
 
 public class TaskCompareTsp extends TaskClosure<ChunkTsp>{
 
@@ -14,7 +14,7 @@ public class TaskCompareTsp extends TaskClosure<ChunkTsp>{
 	}
 
 	@Override
-	public Result<ChunkTsp> execute(SharedState currentState, ComputerCallback callback) {
+	public Result<ChunkTsp> execute(SharedState currentState, ComputerCallback<ChunkTsp> callback) {
 		//find the shortest path and return that list of cities
 		ChunkTsp bestChunk = (ChunkTsp) input[0];
 		for(int i = 1; i < input.length; i++) {
