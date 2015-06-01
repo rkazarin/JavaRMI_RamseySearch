@@ -30,8 +30,9 @@ public class ProxyImp<R> implements Proxy<R> {
 	
 	private boolean isRunning = false;
 	
-	private int numDispatched =0;
-	private int numCollected = 0;
+	private int tasksDispatched =0;
+	private int tasksQueued =0;
+	private int resultsCollected = 0;
 	
 	public ProxyImp(Computer<R> computer, Capabilities spec, int computerId, ProxyCallback<R> callback) throws RemoteException{
 		this.id = computerId;
@@ -77,7 +78,7 @@ public class ProxyImp<R> implements Proxy<R> {
 
 	@Override
 	public boolean isBufferFull() {
-		return getNumQueued() > spec.getBufferSize();
+		return getNumQueued() > spec.getBufferSize()+spec.getNumberOfThreads();
 	}
 	
 	@Override
@@ -89,7 +90,7 @@ public class ProxyImp<R> implements Proxy<R> {
 	}
 	
 	@Override
-	public int getNumQueued() { return numDispatched-numCollected; }
+	public int getNumQueued() { return tasksQueued; }
 	
 	private class Dispatcher extends Thread {
 		
@@ -100,7 +101,8 @@ public class ProxyImp<R> implements Proxy<R> {
 				taskRegistry.put(task.getUID(), task);
 				Log.verbose("="+id+"=> "+task);
 				computer.addTask(task);
-				numDispatched++;
+				tasksDispatched++;
+				tasksQueued++;
 			} 
 			catch (InterruptedException e)	{} 
 			catch (RemoteException e)		{stopProxyWithError(); return;}
@@ -115,7 +117,9 @@ public class ProxyImp<R> implements Proxy<R> {
 				taskRegistry.remove(result.getTaskCreatorId());
 				Log.verbose("<== "+id+"- "+result);
 				callback.processResult(result);
-				numCollected++;
+				resultsCollected++;
+				if(result.isTaskCompleted())
+					tasksQueued--;
 			}
 			catch (InterruptedException e)	{} 
 			catch (RemoteException e)		{stopProxyWithError(); return;}

@@ -27,7 +27,6 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 	public static final boolean LONG_RUNNING = true;
 	public static final boolean SHORT_RUNNING = false;
 	
-
 	private int id = -1;
 	private transient BlockingQueue<Task<R>> tasks;
 	private transient BlockingQueue<Result<R>> results;
@@ -124,7 +123,7 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 				});
 				
 				Log.verbose("-"+id+"- "+task+" = "+result);
-				
+				result.setTaskCompleted();
 				results.put(result);
 			}catch(InterruptedException e){	}
 		}

@@ -33,7 +33,6 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	private transient BlockingQueue<Graph> solutionsToSend;
 	
 	private transient GraphStore store;	
-	private transient SharedTabooList taboo;
 	private transient int solutionsFound =0;
 	private transient boolean isRunning = false;	
 	
@@ -55,7 +54,6 @@ public class RamseyScheduler implements Scheduler<Graph> {
 		this.proxies = proxies;
 		this.solutions = solutions;
 		this.exceptions = exceptions;
-		this.taboo = (SharedTabooList) initialState;
 		isRunning = true;
 		
 		findAndSetStore();
@@ -182,7 +180,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	}
 	
 	public String statusString() {
-		String out = "Progress: "+solutionsFound+" found | Taboo Size: "+taboo.size()+" | Computers:";
+		String out = "Progress: "+solutionsFound+" found Computers:";
 		
 		for(Proxy<Graph> p: proxies.values())
 			out+= " ["+p.getId()+":"+p.getNumQueued()+"]";
@@ -190,7 +188,5 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	}
 
 	@Override
-	public void updateState(SharedState state) {
-		taboo = (SharedTabooList) state;
-	};
+	public void updateState(SharedState state) {};
 }

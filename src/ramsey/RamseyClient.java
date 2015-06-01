@@ -6,6 +6,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 
 import util.Log;
+import system.StateBlank;
 import api.Space;
 
 public class RamseyClient {
@@ -24,7 +25,7 @@ public class RamseyClient {
 		System.out.println("\tTargeting Store: "+storeUrl);
 		
 		Space<Graph> space = (Space<Graph>) Naming.lookup(spaceUrl);
-		space.setTask( null , new SharedTabooList(), new RamseyScheduler(storeUrl) );
+		space.setTask( null , new StateBlank(), new RamseyScheduler(storeUrl) );
 
 		System.out.println("\nSolutions:\n");
 		

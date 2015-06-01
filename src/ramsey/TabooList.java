@@ -1,25 +1,16 @@
 package ramsey;
 
+import java.io.Serializable;
 import java.util.HashSet;
 
-import api.SharedState;
-
-public class SharedTabooList implements SharedState {
+public class TabooList implements Serializable {
 
 	private static final long serialVersionUID = -6356707817281392834L;
 	
 	private HashSet<Integer> set;
 	
-	public SharedTabooList() {
+	public TabooList() {
 		set = new HashSet<>();
-	}
-
-	@Override
-	public SharedState update(SharedState newState) {
-		SharedTabooList combinedList = new SharedTabooList();
-		combinedList.set = this.set;
-		combinedList.set.addAll( ((SharedTabooList)newState).set);
-		return combinedList;
 	}
 
 	public void add(int i, int j){

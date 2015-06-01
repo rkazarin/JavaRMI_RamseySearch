@@ -9,10 +9,9 @@ public class RamseyTask extends TaskClosure<Graph> {
 
 	private static final long serialVersionUID = 6673708275266440578L;
 	
-	private SharedTabooList taboo;
+	private transient TabooList taboo;
 	private Graph currentGraph;
 	private int minUsefulSize, graphComputationLimit;
-	
 
 	public RamseyTask(Graph graph, int minUsefulSize, int graphComputationLimit) {
 		super("Ramsey", DEFAULT_PRIORITY, NO_INPUTS, LONG_RUNNING);
@@ -22,16 +21,13 @@ public class RamseyTask extends TaskClosure<Graph> {
 	}
 
 	@Override
-	public void updateState(SharedState updatedState) {
-		taboo = (SharedTabooList) updatedState;
-	}
+	public void updateState(SharedState updatedState) {	}
 
 	@Override
 	protected Result<Graph> execute(SharedState currentState, ComputerCallback<Graph> callback) throws Exception {
-		taboo = (SharedTabooList) currentState;
-		
 		callback.printMessage("Starting: "+currentGraph);
 		
+		taboo = new TabooList();
 		boolean isSolved = false;
 		do{
 			isSolved = findCounterExample(currentGraph, callback);

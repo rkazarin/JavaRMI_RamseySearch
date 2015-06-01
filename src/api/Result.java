@@ -13,6 +13,7 @@ public class Result<R> implements Serializable{
 	private double runTime;	
 	private long creatorId;
 	private double criticalLength;
+	private boolean taskCompleted = false;
 	
 	public Result(R value) {
 		this(value, null, null);
@@ -36,6 +37,8 @@ public class Result<R> implements Serializable{
 	public boolean hasValue()		{ return value  != null; }
 	public boolean hasTasks()		{ return tasks != null; }
 
+	public boolean isTaskCompleted() { return taskCompleted; }
+	public void setTaskCompleted() { taskCompleted = true; }
 	public Exception getException() { return exception;}
 	public R getValue() { return value; }
 	public Task<R>[] getTasks() { return tasks;}
