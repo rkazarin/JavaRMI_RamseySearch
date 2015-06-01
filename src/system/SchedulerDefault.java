@@ -126,7 +126,7 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 
 	@Override
 	public String toString() {
-		return longTaskPool.size()+" remote, "+shortTaskPool.size()+" local, "+waitingTasks.size()+" waiting ";
+		return "Default Scheduler";
 	}
 
 	private Runnable sorter = new Runnable() {
@@ -190,6 +190,14 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 				}
 			}	
 		}
+	};
+	
+	public String statusString() {
+		String out = "Progress: "+longTaskPool.size()+" remote, "+shortTaskPool.size()+" local, "+waitingTasks.size()+" waiting "+" Computers:";
+		
+		for(ProxyImp<R> p: proxies.values())
+			out+= " ["+p.getId()+":"+p.getNumDispatched()+"|"+p.getNumCollected()+"]";
+		return out;
 	};
 
 }

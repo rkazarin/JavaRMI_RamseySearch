@@ -18,5 +18,7 @@ public interface Scheduler<R> extends Serializable{
 	void start(Map<Integer, ProxyImp<R>> proxies, BlockingQueue<Result<R>> solution);
 	
 	void stop();
+	
+	String statusString();
 
 }

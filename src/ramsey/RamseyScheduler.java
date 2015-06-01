@@ -6,6 +6,7 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.LinkedBlockingQueue;
 
 import system.ProxyImp;
 import api.Capabilities;
@@ -18,15 +19,21 @@ import api.Task;
 public class RamseyScheduler implements Scheduler<Graph> {
 
 	private static final long serialVersionUID = -5111266450833430476L;
+	private static final int GRAPH_START_SIZE = 8;
+	private static final int GRAPH_SMALL_LIMIT = 25;
+	private static final int GRAPH_FINAL_LIMIT = 49;
 	
 	private String graphStoreAddress;
 	private static final int GRAPH_STORE_LOOKUP_TIMEOUT = 1000;
 	
 	private transient Map<Integer, ProxyImp<Graph>> proxies;
 	private transient BlockingQueue<Result<Graph>> solution;
+	private transient BlockingQueue<Graph> solutionsToSend;
 	
 	private transient GraphStore store;	
 	private transient boolean isRunning = false;
+	
+	private int solutionsFound =0;
 	
 	public RamseyScheduler(String graphStoreAddress) {
 		this.graphStoreAddress = graphStoreAddress;
@@ -40,6 +47,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	
 	@Override
 	public void start(Map<Integer, ProxyImp<Graph>> proxies, BlockingQueue<Result<Graph>> solution) {
+		this.solutionsToSend = new LinkedBlockingQueue<Graph>();
 		this.proxies = proxies;
 		this.solution = solution;
 		isRunning = true;
@@ -47,6 +55,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
 		findAndSetStore();
 		
 		new Thread(generateTasker()).start();
+		new Thread(solutionSender()).start();
 	}
 
 	@Override
@@ -81,26 +90,62 @@ public class RamseyScheduler implements Scheduler<Graph> {
 		};
 	};
 	
+	
+	private Runnable solutionSender() {
+		return new Runnable() {
+			@Override
+			public void run() {
+				while(isRunning)  {
+					if(store == null) 
+						try { Thread.sleep(GRAPH_STORE_LOOKUP_TIMEOUT); }
+						catch (InterruptedException e1) {}
+					
+					try {
+						Graph solution = solutionsToSend.take();
+						store.put(solution);
+					} catch (RemoteException e) {
+						System.err.println("Error accessing Graph store");
+						e.printStackTrace();
+					} catch (InterruptedException e) {}
+					
+				}	
+			}
+		};
+	};
+	
 	private Task<Graph> generateTask(Proxy<Graph> proxy){
 		Capabilities spec = proxy.getCapabilities();
 		if(spec.isOnSpace()) return null; //dont schedule on space
 		if(proxy.isBufferFull()) return null;
 
-        RamseyTask toReturn = null;
-
         try {
             if(!spec.isLongRunning()){
-                toReturn =  new RamseyTask(store.getBest(20), 25);
-
-            } else{
-                toReturn =  new RamseyTask(store.getBest(1000), 50);
+            	Graph graph = store.getBestUnasigned(20);
+            	
+            	if(graph != null)
+            		graph = graph.extendRandom();
+            	else
+            		graph = Graph.generateRandom(GRAPH_START_SIZE);
+            	
+            	return new RamseyTask(graph, GRAPH_SMALL_LIMIT);
             }
+            else{
+            	Graph graph = store.getBestUnasigned();
+            	
+            	if(graph != null)
+            		graph = graph.extendRandom();
+            	else 
+            		graph = Graph.generateRandom(GRAPH_START_SIZE);
+            	
+            	return new RamseyTask(store.getBestUnasigned(), GRAPH_FINAL_LIMIT);
+            }
+            
         } catch (RemoteException e) {
+        	System.err.println("Error accessing Graph store");
             e.printStackTrace();
         }
 
-        return toReturn;
-
+        return null;
 	}
 
 	@Override
@@ -108,17 +153,21 @@ public class RamseyScheduler implements Scheduler<Graph> {
 		//If Single value pass it on to target	
 		if(result.hasValue()){
 			solution.add(result);
-			sendToStore(result.getValue());
+			solutionsToSend.add(result.getValue());
+			solutionsFound++;
 		}
 	}
 	
-	private void sendToStore(Graph graph){
-		while(isRunning) try {
-			store.put(graph);
-			break;
-		} catch (RemoteException e) {
-			try { Thread.sleep(GRAPH_STORE_LOOKUP_TIMEOUT); }
-			catch (InterruptedException e1) {}
-		}
+	@Override
+	public String toString() {
+		return "Ramsey(5,5) Scheduler";
 	}
+	
+	public String statusString() {
+		String out = "Progress: "+solutionsFound+" found "+" Computers:";
+		
+		for(ProxyImp<Graph> p: proxies.values())
+			out+= " ["+p.getId()+":"+p.getNumDispatched()+"|"+p.getNumCollected()+"]";
+		return out;
+	};
 }

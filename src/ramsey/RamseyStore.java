@@ -11,92 +11,99 @@ import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.LinkedList;
-import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentLinkedQueue;
 
 public class RamseyStore extends UnicastRemoteObject implements Serializable, Iterable<Graph>, GraphStore{
 
 	private static final long serialVersionUID = 8867753203624856389L;
-	public static final long CHECKPOINT_SAVE_INTERVAL= 10000;
+	private static final long CHECKPOINT_SAVE_INTERVAL= 30000;
 	
-	public static final int GRAPH_LESS_THAN = 103;
-	public static final int GRAPH_AT_LEAST = 8;
 	public static final String BANK_FILENAME = "bank.save";
 	public static final String TEMP_EXTENSION = ".tmp";
-	public static final int IGNORE_FAILED_MORE_THAN = 2;
 
-	@SuppressWarnings("unchecked")
-	private transient List<Graph>[] hierarchy = new List[GRAPH_LESS_THAN];
-	private Map<UUID,Graph> map = new HashMap<>();
+	private transient Queue<Graph>[] hierarchy;
+	private transient Queue<Graph>[] unassigned;
+	
+	private Map<UUID,Graph> map = new ConcurrentHashMap<>();
 	 
-	protected RamseyStore() throws RemoteException {
+	@SuppressWarnings("unchecked")
+	public RamseyStore(int maxSize) throws RemoteException {
 		super();
+		hierarchy = new ConcurrentLinkedQueue[maxSize+1];
+		unassigned = new ConcurrentLinkedQueue[maxSize+1];
+
 		for(int i=0; i<hierarchy.length; i++){
-			hierarchy[i]= new LinkedList<Graph>();
+			hierarchy[i]= new ConcurrentLinkedQueue<Graph>();
+			unassigned[i]= new ConcurrentLinkedQueue<Graph>();
 		}
 	}
 
-	public synchronized boolean put( Graph example){
-		List<Graph> set = hierarchy[example.size()];
+	@Override
+	public synchronized boolean put(Graph graph){
+		Queue<Graph> set = hierarchy[graph.size()];
 		
 		//Do Isomorph check
-		for(Graph a: set) if(a.isIsomorphOf(example)) return false;
+		for(Graph g: set) if(g.isIsomorphOf(graph)) return false;
 
-		map.put(example.getId(),example);
-		hierarchy[example.size()].add(example);
+		map.put(graph.getId(),graph);
+		hierarchy[graph.size()].add(graph);
+		unassigned[graph.size()].add(graph);
 		
 		return true;
 	}
 	
-	public synchronized Graph get(UUID graphID){
+	@Override
+	public synchronized Graph access(UUID graphID){
 		return map.get(graphID);
 	}
 	
-	public synchronized List<Graph> getLevel(int level){
-		return hierarchy[level];
+	@Override
+	public synchronized Queue<Graph> accessAllSize(int size){
+		return hierarchy[size];
 	}
 	
-	public synchronized List<Graph> getGraphsGreaterThan(int level){
+	@Override
+	public synchronized Queue<Graph> accessAllGreaterThan(int size){
 		LinkedList<Graph> list = new LinkedList<>();
-		for(int i = hierarchy.length-1; i > level ; i--){
+		for(int i = hierarchy.length-1; i > size ; i--){
 			list.addAll(hierarchy[i]);
 		}
 		return list;
 	}
 	
-	public synchronized Graph getBest(int startingAt){
-		if(startingAt > hierarchy.length-1) 
-			startingAt = hierarchy.length-1;
-		
-		//Search for best starting point
-		for(int size=startingAt; size>=GRAPH_AT_LEAST; size--){
-			for(Graph g: hierarchy[size]){
-				if(!g.isAssigned() && g.timesFailedToFindSolution() < IGNORE_FAILED_MORE_THAN)
-					return g;
-			}
-		}
-		//could not find one, so make one
-		Graph g = Graph.generateRandom(GRAPH_AT_LEAST);
-	
-		put(g);
-		return g;
+	@Override
+	public synchronized Graph getBestUnasigned(){
+		return getBestUnasigned(Integer.MAX_VALUE);
 	}
 	
+	@Override
+	public synchronized Graph getBestUnasigned(int startingAt){
+		if(startingAt > unassigned.length-1) 
+			startingAt = unassigned.length-1;
+		
+		//Search for best starting point
+		for(int size=startingAt; size>=0; size--){
+			if(unassigned[size].size() > 0)
+				return unassigned[size].poll();
+		}
+		//could not find one, so make one
+		return null;
+	}
+	
+	@Override
 	public synchronized boolean contains(UUID graphId){
 		return map.containsKey(graphId);
 	}
 	
-
-	public int size(){
+	@Override
+	public int sizeOfStore(){
 		return map.size();
-	}
-	
-	public int numLevels(){
-		return hierarchy.length;
 	}
 	
 	public synchronized void save() throws IOException{
@@ -117,24 +124,25 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 	}
 	
 	@SuppressWarnings("unchecked")
-	public static RamseyStore loadOrCreate( String filename ) throws RemoteException{
-
+	public static RamseyStore load( String filename, int maxSize ) throws RemoteException{
 		File bankFile = new File(filename);
 		
-		RamseyStore bank = new RamseyStore();
 		try {
+			RamseyStore bank = new RamseyStore(maxSize);
+			
 			ObjectInputStream in = new ObjectInputStream(new FileInputStream(bankFile));
-			
-			bank.map = (HashMap<UUID,Graph>)in.readObject();
-			
-			for(Graph g: bank.map.values())
-				bank.hierarchy[g.size()].add(g);
-				
+			bank.map = (ConcurrentHashMap<UUID,Graph>)in.readObject();
 			in.close();
+
+			for(Graph g: bank.map.values()){
+				bank.hierarchy[g.size()].add(g);
+				bank.unassigned[g.size()].add(g);
+			}
+			return bank;
 		}
-		catch (IOException | ClassNotFoundException e) {}
-		
-		return bank;
+		catch (IOException | ClassNotFoundException e) {
+			return null;
+		}
 	}
 
 	@Override
@@ -142,8 +150,22 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 		return map.values().iterator();
 	}
 	
+	public String contentsReportAsString(){
+		String out = "------------------------------------ Size:"+map.size()+" ------------------------------------\n";
+		
+		int i=0;
+		while(i<hierarchy.length){
+			out+=i+":\t"+(hierarchy[i].size()<=0?"-":hierarchy[i].size())+"\t";
+			if(i%5==4) out+="\n";
+			i++;
+		}
+		out += "--------------------------------------------------------------------------------\n";
+		return out;
+	}
+	
 	/* ------------ Main Method ------------ */
-	public static void main(String[] args) throws RemoteException {		
+	private static final int RAMSEY_STORE_SIZE = 49;
+	public static void main(String[] args) throws RemoteException {	
 		// Set Security Manager 
         System.setSecurityManager( new SecurityManager() );
 
@@ -151,19 +173,33 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
         Registry registry = LocateRegistry.createRegistry( GraphStore.DEFAULT_PORT );
 
         //Print Acknowledgement
-        System.out.println("Starting Store as '"+GraphStore.DEFAULT_NAME+"' on port "+GraphStore.DEFAULT_PORT);
+        System.out.println("Starting Store as '"+GraphStore.DEFAULT_NAME+"' on port "+GraphStore.DEFAULT_PORT+"\n");
         
         // Create Store
-        RamseyStore store = RamseyStore.loadOrCreate(BANK_FILENAME);
+        RamseyStore store = RamseyStore.load(BANK_FILENAME, RAMSEY_STORE_SIZE);
+        
+        if(store != null){
+        	System.out.println("Loading Store from: '"+BANK_FILENAME+"'");
+        	System.out.println(store.contentsReportAsString());
+        }
+        else {
+        	System.out.println("Store Does not exist. Creating new one of size: "+RAMSEY_STORE_SIZE);
+        	store = new RamseyStore(RAMSEY_STORE_SIZE);
+        }
+     
         registry.rebind( GraphStore.DEFAULT_NAME, store );
 
+        //Checkpointer
+        final RamseyStore theStore = store; 
         new Thread( new Runnable() {	
 			
         	public void run() {
 				while(true) try {
 					Thread.sleep(CHECKPOINT_SAVE_INTERVAL);
-					store.save();
-					System.out.println("Checkpoint Saved");
+					
+					System.out.println("Checkpoint Saved:");
+					theStore.save();
+					System.out.println(theStore.contentsReportAsString());
 				}
 				catch (InterruptedException e) {} 
 				catch (IOException e) {
@@ -171,7 +207,5 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 				}
 			}
 		}).start();
-        
 	}
-
 }

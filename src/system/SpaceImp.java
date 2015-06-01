@@ -26,7 +26,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	/** Serial ID */
 	private static final long serialVersionUID = -1147376615845722661L;
 
-	private static final int STATUS_OUTPUT_INTERVAL = 1000;
+	private static final int STATUS_OUTPUT_INTERVAL = 5000;
 	
 	private static final boolean FORCE_STATE = true;
 	private static final boolean SUGGEST_STATE = false;
@@ -86,7 +86,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		
 		ProxyImp<R> proxy = new ProxyImp<R>(computer, spec, proxyID, proxyCallback);
 		
-		System.out.println("Registering "+proxy);
+		System.out.println("Registering "+proxy+" "+spec);
 		proxy.updateState(state, FORCE_STATE);
 		allProxies.put(proxyID, proxy );
 		return proxyID;
@@ -133,14 +133,12 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		public void run() {
 			while(true){
 				try { Thread.sleep(STATUS_OUTPUT_INTERVAL); } catch (InterruptedException e) {}
+				if(scheduler==null) continue;
 				
-				String newOutput = "Progress: "+scheduler+" Computers:";
-				
-				for(ProxyImp<R> p: allProxies.values())
-					newOutput+= " ["+p.getId()+":"+p.getNumDispatched()+"|"+p.getNumCollected()+"]";
+				String newOutput = scheduler.statusString();
 				if(!last.equals(newOutput)){
 					last = newOutput;
-					Log.debug(newOutput);
+					System.out.println(newOutput);
 				}
 			}
 		}

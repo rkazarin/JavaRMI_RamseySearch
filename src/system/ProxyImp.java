@@ -85,7 +85,7 @@ public class ProxyImp<R> implements Proxy<R> {
 	
 	@Override
 	public String toString() {
-		return "Computer - "+spec.getNumberOfThreads()+" threads as ID: '"+id+"'";
+		return "Computer["+id+"]";
 	}
 	
 	public int getNumDispatched() {	return numDispatched; }

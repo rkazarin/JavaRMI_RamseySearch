@@ -8,11 +8,12 @@ import api.SharedState;
 public class RamseyTask extends TaskClosure<Graph> {
 
 	private static final long serialVersionUID = 6673708275266440578L;
-
+	
 	private SharedTabooList taboo;
 	private Graph current;
 	private int graphComputationLimit;
 	
+
 	public RamseyTask(Graph graph, int graphComputationLimit) {
 		super("Ramsey", DEFAULT_PRIORITY, NO_INPUTS, LONG_RUNNING);
 		this.graphComputationLimit = graphComputationLimit;
@@ -102,7 +103,7 @@ public class RamseyTask extends TaskClosure<Graph> {
 			}
 	
 			if(best_count == Integer.MAX_VALUE) {
-				System.out.println("!! No best edge to remove");
+				//System.out.println("!! No best edge to remove");
 				return false;
 			}
 			

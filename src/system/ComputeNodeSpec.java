@@ -29,4 +29,14 @@ public class ComputeNodeSpec implements Capabilities{
 	@Override
 	public boolean isLongRunning()	{ return isLongRunning;}
 
+	@Override
+	public String toString() {
+		String out ="";
+		out += "'"+numThreads+" Threads' ";
+		out += "'Buffer:"+prefetchBufferSize+"' ";
+		out += isOnSpace?"'On-Space' ":"";
+		out += isLongRunning?"'Long-Running' ":"";
+		
+		return out;
+	}
 }
