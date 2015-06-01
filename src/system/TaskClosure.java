@@ -93,7 +93,9 @@ public abstract class TaskClosure<R> implements Task<R>{
 		for(Object in: input){
 			out+=in+" ";
 		}
-		out = out.substring(0,out.length()-1)+")";
+		if(input.length>0)
+			out = out.substring(0,out.length()-1);
+		out += ")";
 		return out+" >["+targetUid+"]";
 	}
 	

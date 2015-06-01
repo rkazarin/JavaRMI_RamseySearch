@@ -13,15 +13,17 @@ import api.Proxy;
 import api.ProxyStoppedException;
 import api.Result;
 import api.Scheduler;
+import api.SharedState;
 import api.Task;
-
 import util.Log;
 
 public class RamseyScheduler implements Scheduler<Graph> {
 
 	private static final long serialVersionUID = -5111266450833430476L;
-	private static final int GRAPH_START_SIZE = 8;
-	private static final int GRAPH_SMALL_LIMIT = 25;
+	private static final int GRAPH_START_SIZE = 10;
+	private static final int GRAPH_MIN_USEFUL_SIZE = 20;
+	private static final int GRAPH_SMALL_PREFERED = 25;
+	private static final int GRAPH_SMALL_LIMIT = 31;
 	private static final int GRAPH_FINAL_LIMIT = 49;
 	private static final int GRAPH_STORE_LOOKUP_TIMEOUT = 1000;
 	
@@ -31,6 +33,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	private transient BlockingQueue<Graph> solutionsToSend;
 	
 	private transient GraphStore store;	
+	private transient SharedTabooList taboo;
 	private transient int solutionsFound =0;
 	private transient boolean isRunning = false;	
 	
@@ -47,11 +50,12 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	public void schedule(Task<Graph> task) {}
 	
 	@Override
-	public void start(Map<Integer, Proxy<Graph>> proxies, BlockingQueue<Result<Graph>> solutions, BlockingQueue<Exception> exceptions) {
+	public void start(SharedState initialState, Map<Integer, Proxy<Graph>> proxies, BlockingQueue<Result<Graph>> solutions, BlockingQueue<Exception> exceptions) {
 		this.solutionsToSend = new LinkedBlockingQueue<Graph>();
 		this.proxies = proxies;
 		this.solutions = solutions;
 		this.exceptions = exceptions;
+		this.taboo = (SharedTabooList) initialState;
 		isRunning = true;
 		
 		findAndSetStore();
@@ -118,28 +122,30 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	private Task<Graph> generateTask(Proxy<Graph> proxy){
 		Capabilities spec = proxy.getCapabilities();
 		if(spec.isOnSpace()) return null; //dont schedule on space
-		if(proxy.isBufferFull()) return null;
+		if(proxy.getNumQueued() > 1) return null;
 
         try {
             if(!spec.isLongRunning()){
-            	Graph graph = store.getBestUnasigned(20);
+            	Graph graph = store.getBestUnasigned(GRAPH_SMALL_PREFERED);
             	
+            	Log.verbose("Asking for Best Graph >= size "+GRAPH_SMALL_PREFERED+" "+(graph==null?"but none recieved!":"and got Graph Size "+graph.size()));
             	if(graph != null)
             		graph = graph.extendRandom();
             	else
             		graph = Graph.generateRandom(GRAPH_START_SIZE);
             	
-            	return new RamseyTask(graph, GRAPH_SMALL_LIMIT);
+            	return new RamseyTask(graph, GRAPH_MIN_USEFUL_SIZE, GRAPH_SMALL_LIMIT);
             }
             else{
             	Graph graph = store.getBestUnasigned();
+            	Log.verbose("Asking for Best Graph "+(graph==null?"but none recieved!":"and got Graph Size "+graph.size()));
             	
             	if(graph != null)
             		graph = graph.extendRandom();
             	else 
             		graph = Graph.generateRandom(GRAPH_START_SIZE);
             	
-            	return new RamseyTask(graph, GRAPH_FINAL_LIMIT);
+            	return new RamseyTask(graph, GRAPH_MIN_USEFUL_SIZE,  GRAPH_FINAL_LIMIT);
             }
             
         } catch (RemoteException e) {
@@ -157,12 +163,13 @@ public class RamseyScheduler implements Scheduler<Graph> {
 		if(result.hasException()){
 			exceptions.add(result.getException());
 			
+			
 			//Print exceptions stack trace
-			if(Log.DEBUG) result.getException().printStackTrace();
+			Log.verbose("Exception: "+result.getException().getMessage());
 		}
 		
 		//If Single value pass it on to target	
-		if(result.hasValue()){
+		if(result.hasValue() && result.getValue().size() >= GRAPH_MIN_USEFUL_SIZE){			
 			solutions.add(result);
 			solutionsToSend.add(result.getValue());
 			solutionsFound++;
@@ -175,10 +182,15 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	}
 	
 	public String statusString() {
-		String out = "Progress: "+solutionsFound+" found "+" Computers:";
+		String out = "Progress: "+solutionsFound+" found | Taboo Size: "+taboo.size()+" | Computers:";
 		
 		for(Proxy<Graph> p: proxies.values())
 			out+= " ["+p.getId()+":"+p.getNumQueued()+"]";
 		return out;
+	}
+
+	@Override
+	public void updateState(SharedState state) {
+		taboo = (SharedTabooList) state;
 	};
 }

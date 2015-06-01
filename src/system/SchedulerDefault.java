@@ -11,6 +11,7 @@ import api.Proxy;
 import api.ProxyStoppedException;
 import api.Result;
 import api.Scheduler;
+import api.SharedState;
 import api.Task;
 
 public class SchedulerDefault<R> implements Scheduler<R> {
@@ -116,7 +117,7 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	}
 	
 	@Override
-	public void start(Map<Integer, Proxy<R>> proxies, BlockingQueue<Result<R>> solutions, BlockingQueue<Exception> exceptions) {
+	public void start(SharedState initialState, Map<Integer, Proxy<R>> proxies, BlockingQueue<Result<R>> solutions, BlockingQueue<Exception> exceptions) {
 		this.proxies = proxies;
 		this.solutions = solutions;
 		this.exceptions = exceptions;
@@ -207,6 +208,9 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 		for(Proxy<R> p: proxies.values())
 			out+= " ["+p.getId()+":"+p.getNumQueued()+"]";
 		return out;
-	};
+	}
+
+	@Override
+	public void updateState(SharedState state) {};
 
 }

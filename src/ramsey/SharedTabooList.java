@@ -16,8 +16,10 @@ public class SharedTabooList implements SharedState {
 
 	@Override
 	public SharedState update(SharedState newState) {
-		set.addAll( ((SharedTabooList)newState).set);
-		return this;
+		SharedTabooList combinedList = new SharedTabooList();
+		combinedList.set = this.set;
+		combinedList.set.addAll( ((SharedTabooList)newState).set);
+		return combinedList;
 	}
 
 	public void add(int i, int j){

@@ -92,7 +92,7 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 			if(unassigned[size].size() > 0)
 				return unassigned[size].poll();
 		}
-		//could not find one, so make one
+		//could not find one
 		return null;
 	}
 	
@@ -112,9 +112,11 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 		
 		ObjectOutputStream out = new ObjectOutputStream(new FileOutputStream(bankTempFile));
 		
+		Map<UUID,Graph> mapCopy;
 		synchronized (map) {
-			out.writeObject(map);
+			mapCopy = new ConcurrentHashMap<>(map);
 		}
+		out.writeObject(mapCopy);
 		
 		out.close();
 

@@ -71,7 +71,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		
 		if( scheduler != null) scheduler.stop();
 		scheduler = customScheduler;
-		scheduler.start(allProxies, solutions, exceptions);
+		scheduler.start(initialState, allProxies, solutions, exceptions);
 		scheduler.scheduleInitial(task);
 	}
 
@@ -105,6 +105,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		SharedState original = state;
 		
 		this.state = state.update(updatedState);
+		scheduler.updateState(state);
 		
 		Log.debug("<="+originatorID+"= "+updatedState+(updatedState !=null && (original != state)?" Updated":" Kept") );
 		if( original != state){

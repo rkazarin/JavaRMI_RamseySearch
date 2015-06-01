@@ -11,12 +11,13 @@ public class RamseyTask extends TaskClosure<Graph> {
 	
 	private SharedTabooList taboo;
 	private Graph currentGraph;
-	private int graphComputationLimit;
+	private int minUsefulSize, graphComputationLimit;
 	
 
-	public RamseyTask(Graph graph, int graphComputationLimit) {
+	public RamseyTask(Graph graph, int minUsefulSize, int graphComputationLimit) {
 		super("Ramsey", DEFAULT_PRIORITY, NO_INPUTS, LONG_RUNNING);
 		this.graphComputationLimit = graphComputationLimit;
+		this.minUsefulSize = minUsefulSize;
 		this.currentGraph = graph;
 	}
 
@@ -44,7 +45,8 @@ public class RamseyTask extends TaskClosure<Graph> {
 			}
 			
 			//Send Solution
-			callback.producePartialResult( new Result<Graph>(currentGraph) );
+			if(currentGraph.size() >= minUsefulSize)
+				callback.producePartialResult( new Result<Graph>(currentGraph) );
 			
 			//Extend and keep solving
 			currentGraph = currentGraph.extendRandom();
@@ -133,6 +135,11 @@ public class RamseyTask extends TaskClosure<Graph> {
 			// rinse and repeat
 		}
 		
+	}
+	
+	@Override
+	public String toString() {
+		return name +"_"+getUID()+"("+currentGraph.size()+")";
 	}
 
 }
