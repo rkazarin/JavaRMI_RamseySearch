@@ -1,16 +1,17 @@
 package api;
 
-
 public interface Proxy<R> {
 
-	public abstract void updateState(SharedState updatedState, boolean force);
+	void updateState(SharedState updatedState, boolean force);
 
-	public abstract int getId();
+	int getId();
 
-	public abstract Capabilities getCapabilities();
+	Capabilities getCapabilities();
 	
-	public abstract void assignTask(Task<R> task) throws ProxyStoppedException;
+	void assignTask(Task<R> task) throws ProxyStoppedException;
 	
-	public abstract boolean isBufferFull();
+	boolean isBufferFull();
+	
+	int getNumQueued();
 
 }

@@ -6,6 +6,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.PriorityBlockingQueue;
 
+import util.Log;
 import api.Proxy;
 import api.ProxyStoppedException;
 import api.Result;
@@ -14,24 +15,25 @@ import api.Task;
 
 public class SchedulerDefault<R> implements Scheduler<R> {
 
-	private static final long serialVersionUID = 4553427787142633L;
+	private static final long serialVersionUID = 4553427787142633L;	
+	private static final int INITIAL_CAPACITY = 25000;
 
 	protected static final long SOLUTION_UID = 0;
 	protected long UID_POOL = SOLUTION_UID+1;
 
-	private static final int INITIAL_CAPACITY = 25000;
-
-	protected BlockingQueue<Result<R>> solution;
-	protected Map<Integer, ProxyImp<R>> proxies;
 	
-	protected Map<Long, Task<R>> registeredTasks = new ConcurrentHashMap<Long, Task<R>>();
-	protected BlockingQueue<Task<R>> waitingTasks = new LinkedBlockingQueue<Task<R>>();
+	protected transient BlockingQueue<Result<R>> solutions;
+	protected transient BlockingQueue<Exception> exceptions;
+	protected transient Map<Integer, Proxy<R>> proxies;
 	
-	private PriorityBlockingQueue<Task<R>> shortTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
-	private PriorityBlockingQueue<Task<R>> longTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
+	protected transient Map<Long, Task<R>> registeredTasks = new ConcurrentHashMap<Long, Task<R>>();
+	protected transient BlockingQueue<Task<R>> waitingTasks = new LinkedBlockingQueue<Task<R>>();
 	
-	private boolean isRunning = false;	
-	private double totalRuntime = 0;
+	protected transient PriorityBlockingQueue<Task<R>> shortTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
+	protected transient PriorityBlockingQueue<Task<R>> longTaskPool = new PriorityBlockingQueue<Task<R>>(INITIAL_CAPACITY, new TaskComparator());
+	
+	protected transient boolean isRunning = false;	
+	private transient double totalRuntime = 0;
 	
 	@Override
 	public void scheduleInitial(Task<R> task){
@@ -57,6 +59,12 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 		
 		totalRuntime += result.getRunTime();
 		
+		//If Exceptions add to exceptions queue
+		if(result.hasException()){
+			exceptions.add(result.getException());
+			Log.verbose(result.getException().getMessage());
+		}
+				
 		//If Single value pass it on to target	
 		if(result.hasValue()){
 			
@@ -67,7 +75,7 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 				terminalResult.setCriticalLength(result.getCriticalLengthOfParents()+result.getRunTime());
 				terminalResult.setRunTime(totalRuntime);
 				
-				solution.add(terminalResult);
+				solutions.add(terminalResult);
 			}
 			else {
 				Task<R> target = registeredTasks.get(origin.getTargetUid());
@@ -108,9 +116,10 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	}
 	
 	@Override
-	public void start(Map<Integer, ProxyImp<R>> proxies, BlockingQueue<Result<R>> solution) {
+	public void start(Map<Integer, Proxy<R>> proxies, BlockingQueue<Result<R>> solutions, BlockingQueue<Exception> exceptions) {
 		this.proxies = proxies;
-		this.solution = solution;
+		this.solutions = solutions;
+		this.exceptions = exceptions;
 		
 		isRunning = true;
 		
@@ -195,8 +204,8 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	public String statusString() {
 		String out = "Progress: "+longTaskPool.size()+" remote, "+shortTaskPool.size()+" local, "+waitingTasks.size()+" waiting "+" Computers:";
 		
-		for(ProxyImp<R> p: proxies.values())
-			out+= " ["+p.getId()+":"+p.getNumDispatched()+"|"+p.getNumCollected()+"]";
+		for(Proxy<R> p: proxies.values())
+			out+= " ["+p.getId()+":"+p.getNumQueued()+"]";
 		return out;
 	};
 

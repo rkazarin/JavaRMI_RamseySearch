@@ -15,7 +15,9 @@ public interface Space<R> extends Remote {
 	void setTask(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException;
 	
 	Result<R> getSolution() throws RemoteException, InterruptedException;
-    
+	
+	Exception getException() throws RemoteException, InterruptedException;
+	
 	int register( Computer<R> computer, Capabilities spec ) throws RemoteException;
 
 	void updateState(int originatorID, SharedState state) throws RemoteException;

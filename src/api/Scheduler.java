@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 
-import system.ProxyImp;
-
 public interface Scheduler<R> extends Serializable{
 
 	void schedule(Task<R> task);
@@ -15,7 +13,7 @@ public interface Scheduler<R> extends Serializable{
 	void processResult(Result<R> result);
 	
 	//Should not be blocking!!!
-	void start(Map<Integer, ProxyImp<R>> proxies, BlockingQueue<Result<R>> solution);
+	void start(Map<Integer, Proxy<R>> proxies, BlockingQueue<Result<R>> solutions, BlockingQueue<Exception> exceptions);
 	
 	void stop();
 	

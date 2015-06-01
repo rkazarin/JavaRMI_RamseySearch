@@ -205,21 +205,13 @@ public class Graph implements Comparable<Graph>, Serializable{
 		return graph;
 	}
 
-	
-
-
 	/**
 	 * Checks to see if this graph is IsoMorph of another graph
 	 * @param o graph to check against
 	 * @return true if isomorph
 	 */
 	public boolean isIsomorphOf(Graph o){
-		//METHOD STUB
-		
-		
-		/*
-		 
-		 */
+		//TODO: IMPLEMENT ISOMORPHIC CHECKING
 		return this.equals(o);
 	}
 		

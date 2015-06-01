@@ -10,14 +10,14 @@ public class RamseyTask extends TaskClosure<Graph> {
 	private static final long serialVersionUID = 6673708275266440578L;
 	
 	private SharedTabooList taboo;
-	private Graph current;
+	private Graph currentGraph;
 	private int graphComputationLimit;
 	
 
 	public RamseyTask(Graph graph, int graphComputationLimit) {
 		super("Ramsey", DEFAULT_PRIORITY, NO_INPUTS, LONG_RUNNING);
 		this.graphComputationLimit = graphComputationLimit;
-		this.current = graph;
+		this.currentGraph = graph;
 	}
 
 	@Override
@@ -29,25 +29,30 @@ public class RamseyTask extends TaskClosure<Graph> {
 	protected Result<Graph> execute(SharedState currentState, ComputerCallback<Graph> callback) throws Exception {
 		taboo = (SharedTabooList) currentState;
 		
+		callback.printMessage("Starting: "+currentGraph);
+		
 		boolean isSolved = false;
 		do{
-			isSolved = findCounterExample(current, callback);
+			isSolved = findCounterExample(currentGraph, callback);
 			 
-			if(isSolved)
-				callback.producePartialResult(new Result<Graph>(current));
-			else
-				throw new Exception("No solution found for size "+current.size());
-			
+			if(isSolved){
+				callback.producePartialResult(new Result<Graph>(currentGraph));
+			}
+			else{
+				callback.printMessage("No solution found for size "+currentGraph.size());
+				throw new Exception("No solution found for size "+currentGraph.size());
+			}
 			
 			//Send Solution
-			callback.producePartialResult( new Result<Graph>(current) );
+			callback.producePartialResult( new Result<Graph>(currentGraph) );
 			
 			//Extend and keep solving
-			current = current.extendRandom();
+			currentGraph = currentGraph.extendRandom();
+			callback.printMessage("Solution found! Moving on to Graph Size "+currentGraph.size());
 		}
-		while(current.size() <= graphComputationLimit);
-
-		return new Result<Graph>(current);
+		while(currentGraph.size() <= graphComputationLimit);
+		callback.printMessage("Search limit reached for this task: "+currentGraph.size());
+		return new Result<Graph>(currentGraph);
 	}
 	
 	private boolean findCounterExample(Graph g, ComputerCallback<Graph> callback)  throws Exception{

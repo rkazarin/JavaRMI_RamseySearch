@@ -8,7 +8,6 @@ import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import system.ProxyImp;
 import api.Capabilities;
 import api.Proxy;
 import api.ProxyStoppedException;
@@ -16,24 +15,26 @@ import api.Result;
 import api.Scheduler;
 import api.Task;
 
+import util.Log;
+
 public class RamseyScheduler implements Scheduler<Graph> {
 
 	private static final long serialVersionUID = -5111266450833430476L;
 	private static final int GRAPH_START_SIZE = 8;
 	private static final int GRAPH_SMALL_LIMIT = 25;
 	private static final int GRAPH_FINAL_LIMIT = 49;
-	
-	private String graphStoreAddress;
 	private static final int GRAPH_STORE_LOOKUP_TIMEOUT = 1000;
 	
-	private transient Map<Integer, ProxyImp<Graph>> proxies;
-	private transient BlockingQueue<Result<Graph>> solution;
+	private transient Map<Integer, Proxy<Graph>> proxies;
+	private transient BlockingQueue<Result<Graph>> solutions;
+	private transient BlockingQueue<Exception> exceptions;
 	private transient BlockingQueue<Graph> solutionsToSend;
 	
 	private transient GraphStore store;	
-	private transient boolean isRunning = false;
+	private transient int solutionsFound =0;
+	private transient boolean isRunning = false;	
 	
-	private int solutionsFound =0;
+	private String graphStoreAddress;
 	
 	public RamseyScheduler(String graphStoreAddress) {
 		this.graphStoreAddress = graphStoreAddress;
@@ -46,10 +47,11 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	public void schedule(Task<Graph> task) {}
 	
 	@Override
-	public void start(Map<Integer, ProxyImp<Graph>> proxies, BlockingQueue<Result<Graph>> solution) {
+	public void start(Map<Integer, Proxy<Graph>> proxies, BlockingQueue<Result<Graph>> solutions, BlockingQueue<Exception> exceptions) {
 		this.solutionsToSend = new LinkedBlockingQueue<Graph>();
 		this.proxies = proxies;
-		this.solution = solution;
+		this.solutions = solutions;
+		this.exceptions = exceptions;
 		isRunning = true;
 		
 		findAndSetStore();
@@ -81,8 +83,8 @@ public class RamseyScheduler implements Scheduler<Graph> {
 				while(isRunning) for(Proxy<Graph> proxy: proxies.values()) {
 					try {
 						Task<Graph> task = generateTask(proxy);
-						if(task == null) continue;
-						proxy.assignTask(task);
+						if(task != null) 
+							proxy.assignTask(task);
 					} 
 					catch (ProxyStoppedException e) {}				
 				}	
@@ -137,7 +139,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
             	else 
             		graph = Graph.generateRandom(GRAPH_START_SIZE);
             	
-            	return new RamseyTask(store.getBestUnasigned(), GRAPH_FINAL_LIMIT);
+            	return new RamseyTask(graph, GRAPH_FINAL_LIMIT);
             }
             
         } catch (RemoteException e) {
@@ -150,9 +152,18 @@ public class RamseyScheduler implements Scheduler<Graph> {
 
 	@Override
 	public void processResult(Result<Graph> result) {
+		
+		//If Exceptions add to exceptions queue
+		if(result.hasException()){
+			exceptions.add(result.getException());
+			
+			//Print exceptions stack trace
+			if(Log.DEBUG) result.getException().printStackTrace();
+		}
+		
 		//If Single value pass it on to target	
 		if(result.hasValue()){
-			solution.add(result);
+			solutions.add(result);
 			solutionsToSend.add(result.getValue());
 			solutionsFound++;
 		}
@@ -166,8 +177,8 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	public String statusString() {
 		String out = "Progress: "+solutionsFound+" found "+" Computers:";
 		
-		for(ProxyImp<Graph> p: proxies.values())
-			out+= " ["+p.getId()+":"+p.getNumDispatched()+"|"+p.getNumCollected()+"]";
+		for(Proxy<Graph> p: proxies.values())
+			out+= " ["+p.getId()+":"+p.getNumQueued()+"]";
 		return out;
 	};
 }

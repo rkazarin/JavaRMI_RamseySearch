@@ -36,8 +36,10 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	
 	private Scheduler<R> scheduler;
 	
-	protected BlockingQueue<Result<R>> solution = new LinkedBlockingQueue<Result<R>>();
-	private Map<Integer, ProxyImp<R>> allProxies = new ConcurrentHashMap<Integer, ProxyImp<R>>();
+	protected BlockingQueue<Result<R>> solutions = new LinkedBlockingQueue<Result<R>>();
+	protected BlockingQueue<Exception> exceptions = new LinkedBlockingQueue<Exception>();
+	
+	private Map<Integer, Proxy<R>> allProxies = new ConcurrentHashMap<Integer, Proxy<R>>();
 	
 	private SharedState state = new StateBlank();
 
@@ -69,13 +71,18 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		
 		if( scheduler != null) scheduler.stop();
 		scheduler = customScheduler;
-		scheduler.start(allProxies, solution);
+		scheduler.start(allProxies, solutions, exceptions);
 		scheduler.scheduleInitial(task);
 	}
 
 	@Override
 	public Result<R> getSolution() throws RemoteException, InterruptedException {
-		return solution.take();
+		return solutions.take();
+	}
+	
+	@Override
+	public Exception getException() throws RemoteException, InterruptedException {
+		return exceptions.take();
 	}
 	
 	@Override

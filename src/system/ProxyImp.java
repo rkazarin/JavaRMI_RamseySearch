@@ -77,7 +77,7 @@ public class ProxyImp<R> implements Proxy<R> {
 
 	@Override
 	public boolean isBufferFull() {
-		return spec.getBufferSize() < assignedTasks.size();
+		return getNumQueued() > spec.getBufferSize();
 	}
 	
 	@Override
@@ -88,9 +88,8 @@ public class ProxyImp<R> implements Proxy<R> {
 		return "Computer["+id+"]";
 	}
 	
-	public int getNumDispatched() {	return numDispatched; }
-
-	public int getNumCollected() { return numCollected; }
+	@Override
+	public int getNumQueued() { return numDispatched-numCollected; }
 	
 	private class Dispatcher extends Thread {
 		

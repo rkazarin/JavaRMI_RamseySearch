@@ -116,6 +116,11 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 						}
 						catch (InterruptedException e) {}
 					}
+
+					@Override
+					public void printMessage(String message) {
+						System.out.println("Thread "+id+": "+message);
+					}
 				});
 				
 				Log.verbose("-"+id+"- "+task+" = "+result);
@@ -145,11 +150,8 @@ public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 			
 			System.out.println("Computer Registered as:\t"+registeredID);
 			System.out.println("Number Threads:\t\t"+spec.getNumberOfThreads());
-			
-			if(spec.getBufferSize()>1)
-				System.out.println("Amerlioration Enabled with Buffer: "+spec.getBufferSize());
-			else
-				System.out.println("Amerlioration Disabled");
+			System.out.println("Prefetch Buffer:\t"+spec.getBufferSize());
+			System.out.println("Longevity:\t\t"+(spec.isLongRunning()?"Long":"Short"));
 			
 		} catch (MalformedURLException | RemoteException | NotBoundException e)  {
             System.err.println("Error Connecting to Space at "+url);
