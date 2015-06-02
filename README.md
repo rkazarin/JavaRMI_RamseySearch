@@ -1,5 +1,29 @@
 # JavaRMI_RamseySearch
 
+***********
+To run space:
+
+ant -Darg0={numLocalThreads} runSpace
+
+To run computer:
+
+ant -Darg0={remote_space_host_ip_address} -Darg1={desiredPrefetchBufferSize} -Darg2={desiredNumThreads} -Darg3={isLongRunning} runComputer
+
+To run Graph Store for Ramsey:
+
+ant runRamseyStore
+
+To run TSP Client:
+
+ant -Darg0={remote_space_host_ip_address} -Darg1={12 or 16 cities} -Darg2={true or false branchAndBound} runTspClient
+
+To run Ramsey Client:
+
+ant -Darg0={remote_space_host_ip_address} -Darg1={graph_store_host_ip_address} runTspClient
+
+
+***********
+
 1. Download Code
 
 2. Compile it
