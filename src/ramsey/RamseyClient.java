@@ -14,7 +14,7 @@ public class RamseyClient {
     @SuppressWarnings("unchecked")
 	public static void main(String[] args) throws RemoteException, InterruptedException, MalformedURLException, NotBoundException {
 		String spaceIp = (args.length > 0)? args[0] : "localhost";
-		String storeIp = (args.length > 0)? args[0] : "localhost";
+		String storeIp = (args.length > 0)? args[1] : "localhost";
 		
 		String spaceUrl = "rmi://" + spaceIp + ":" + Space.DEFAULT_PORT + "/" + Space.DEFAULT_NAME;
 		String storeUrl = "rmi://" + storeIp + ":" + GraphStore.DEFAULT_PORT + "/" + GraphStore.DEFAULT_NAME;

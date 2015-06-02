@@ -81,6 +81,15 @@
         </java>
     </target>
 
+    <target name="runRamseyStore" description="run ramsey graph store" >
+        <java classpath="${build}" classname="ramsey.RamseyStore" fork="true">
+            <jvmarg value="-Djava.security.policy=policy/policy"/>
+            <classpath>
+                <pathelement location="dist/client.jar"/>
+            </classpath>
+        </java>
+    </target>
+
   <target name="clean" description="clean up" >
     <!-- Delete the ${build} and ${dist} directory trees -->
     <delete dir="${client_file_codebase}/tasks"/>
