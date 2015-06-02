@@ -82,7 +82,7 @@ public abstract class TaskClosure<R> implements Task<R>{
 	public int getTargetPort(){ return targetPort; }
 	
 	@Override
-	public boolean isShortRunning() { return isShorRunning; }
+	public boolean isSpaceRunnable() { return isShorRunning; }
 	
 	@Override
 	public int getPriority()		{return priority;}

@@ -52,17 +52,17 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 	}
 
 	@Override
-	public void setTask(Task<R> task) throws RemoteException, InterruptedException {
-		setTask(task, new StateBlank());
+	public void setJob(Task<R> task) throws RemoteException, InterruptedException {
+		setJob(task, new StateBlank());
 	}
 	
 	@Override
-	public void setTask(Task<R> task, SharedState initialState) throws RemoteException, InterruptedException {
-		setTask(task, initialState, new SchedulerDefault<R>());
+	public void setJob(Task<R> task, SharedState initialState) throws RemoteException, InterruptedException {
+		setJob(task, initialState, new SchedulerDefault<R>());
 	}
 	
 	@Override
-	public void setTask(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException {
+	public void setJob(Task<R> task, SharedState initialState, Scheduler<R> customScheduler) throws RemoteException, InterruptedException {
 		state = initialState;
 				
 		for(Proxy<R> p: allProxies.values()){
@@ -72,7 +72,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		if( scheduler != null) scheduler.stop();
 		scheduler = customScheduler;
 		scheduler.start(initialState, allProxies, solutions, exceptions);
-		scheduler.scheduleInitial(task);
+		scheduler.setJob(task);
 	}
 
 	@Override
@@ -122,10 +122,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		@Override
 		public synchronized void doOnError(int proxyId, Collection<Task<R>> leftoverTasks) {
 			System.out.println("Requeing "+leftoverTasks.size()+ " tasks");
-			
-			for(Task<R> task : leftoverTasks)
-				scheduler.schedule(task);
-			
+			scheduler.rescheduleTasks(leftoverTasks);
 			allProxies.remove(proxyId);
 		}
 
@@ -135,7 +132,7 @@ public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 		}
 	};
 	
-	class StatusPrinter extends Thread {
+	private class StatusPrinter extends Thread {
 		String last = "";
 		@Override
 		public void run() {

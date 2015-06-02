@@ -4,6 +4,7 @@ import java.net.MalformedURLException;
 import java.rmi.Naming;
 import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
@@ -43,10 +44,7 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	}
 	
 	@Override
-	public void scheduleInitial(Task<Graph> task) {}
-	
-	@Override
-	public void schedule(Task<Graph> task) {}
+	public void setJob(Task<Graph> task) {}
 	
 	@Override
 	public void start(SharedState initialState, Map<Integer, Proxy<Graph>> proxies, BlockingQueue<Result<Graph>> solutions, BlockingQueue<Exception> exceptions) {
@@ -188,5 +186,8 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	}
 
 	@Override
-	public void updateState(SharedState state) {};
+	public void updateState(SharedState state) {}
+
+	@Override
+	public void rescheduleTasks(Collection<Task<Graph>> leftoverTasks) {};
 }

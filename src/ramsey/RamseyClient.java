@@ -25,7 +25,7 @@ public class RamseyClient {
 		System.out.println("\tTargeting Store: "+storeUrl);
 		
 		Space<Graph> space = (Space<Graph>) Naming.lookup(spaceUrl);
-		space.setTask( null , new StateBlank(), new RamseyScheduler(storeUrl) );
+		space.setJob(null , new StateBlank(), new RamseyScheduler(storeUrl) );
 
 		System.out.println("\nSolutions:\n");
 		

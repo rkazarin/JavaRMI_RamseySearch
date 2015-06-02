@@ -1,5 +1,6 @@
 package system;
 
+import java.util.Collection;
 import java.util.Map;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -37,21 +38,18 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	private transient double totalRuntime = 0;
 	
 	@Override
-	public void scheduleInitial(Task<R> task){
+	public void setJob(Task<R> task){
 		if(task == null) return;
 		task.setTarget(SOLUTION_UID, 0);
 		schedule(task);
 	}
 	
 	@Override
-	public void schedule(Task<R> task){
-		if(task == null) return;
-	
-		task.setUid(UID_POOL++);
-		
-		registeredTasks.put(task.getUID(), task);
-		waitingTasks.add(task);
-	}
+	public void rescheduleTasks(Collection<Task<R>> leftoverTasks) {
+		for(Task<R> task : leftoverTasks)
+			schedule(task);
+	};
+
 	
 	@Override
 	public synchronized void processResult(Result<R> result) {
@@ -117,6 +115,18 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 	}
 	
 	@Override
+	public String statusString() {
+		String out = "Progress: "+longTaskPool.size()+" remote, "+shortTaskPool.size()+" local, "+waitingTasks.size()+" waiting "+" Computers:";
+		
+		for(Proxy<R> p: proxies.values())
+			out+= " ["+p.getId()+":"+p.getNumQueued()+"]";
+		return out;
+	}
+
+	@Override
+	public void updateState(SharedState state) {}
+	
+	@Override
 	public void start(SharedState initialState, Map<Integer, Proxy<R>> proxies, BlockingQueue<Result<R>> solutions, BlockingQueue<Exception> exceptions) {
 		this.proxies = proxies;
 		this.solutions = solutions;
@@ -148,7 +158,7 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 					
 					if(task.isReady()){
 					
-						if(task.isShortRunning())
+						if(task.isSpaceRunnable())
 							shortTaskPool.add(task); 
 						else
 							longTaskPool.add(task);
@@ -202,15 +212,12 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 		}
 	};
 	
-	public String statusString() {
-		String out = "Progress: "+longTaskPool.size()+" remote, "+shortTaskPool.size()+" local, "+waitingTasks.size()+" waiting "+" Computers:";
+	private void schedule(Task<R> task){
+		if(task == null) return;
+	
+		task.setUid(UID_POOL++);
 		
-		for(Proxy<R> p: proxies.values())
-			out+= " ["+p.getId()+":"+p.getNumQueued()+"]";
-		return out;
+		registeredTasks.put(task.getUID(), task);
+		waitingTasks.add(task);
 	}
-
-	@Override
-	public void updateState(SharedState state) {};
-
 }
