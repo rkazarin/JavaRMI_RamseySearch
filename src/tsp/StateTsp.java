@@ -3,6 +3,14 @@ package tsp;
 import api.SharedState;
 import util.Distances;
 
+/**
+ * Implements a shared upper bound 
+ * For Branch and Bound
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class StateTsp implements SharedState{
 
 	private static final long serialVersionUID = 8361224589256034886L;

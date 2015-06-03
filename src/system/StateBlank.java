@@ -2,6 +2,15 @@ package system;
 
 import api.SharedState;
 
+/**
+ * Basic Shared State Implementation
+ * 
+ * Never updates. Stores no data.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class StateBlank implements SharedState {
 
 	private static final long serialVersionUID = -448945541763944065L;

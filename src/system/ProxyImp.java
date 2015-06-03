@@ -16,6 +16,14 @@ import api.Result;
 import api.SharedState;
 import api.Task;
 
+/**
+ * Implementation of a Proxy
+ * Handles interactions between Space and Computers
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class ProxyImp<R> implements Proxy<R> {
 
 	private final Computer<R> computer;
@@ -66,7 +74,6 @@ public class ProxyImp<R> implements Proxy<R> {
 		}
 	}
 
-
 	@Override
 	public Capabilities getCapabilities() { return spec; }
 
@@ -93,7 +100,6 @@ public class ProxyImp<R> implements Proxy<R> {
 	public int getNumQueued() { return tasksQueued; }
 	
 	private class Dispatcher extends Thread {
-		
 		@Override
 		public void run() {	
 			while(isRunning) try {

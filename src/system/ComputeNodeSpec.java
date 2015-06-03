@@ -2,6 +2,14 @@ package system;
 
 import api.Capabilities;
 
+/**
+ * Implementations for Capabilities of a particular ComputeNode
+ * Allows Schedulers to make intelligent scheduling choices
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class ComputeNodeSpec implements Capabilities{
 
 	private static final long serialVersionUID = -4800920412924232081L;

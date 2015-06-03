@@ -4,6 +4,14 @@ import java.io.Serializable;
 import java.util.LinkedList;
 import java.util.List;
 
+/**
+ * Computes euclidiean distances. 
+ * Used by TSP.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class Distances implements Serializable{
 
 	private static final long serialVersionUID = 3273068850640944591L;

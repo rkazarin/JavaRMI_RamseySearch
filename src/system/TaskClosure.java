@@ -9,6 +9,14 @@ import api.Result;
 import api.SharedState;
 import api.Task;
 
+/**
+ * Core implementation of a task using a closure.
+ * Extended by user applications that overide the excecute() method
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public abstract class TaskClosure<R> implements Task<R>{
 	
 	private static final long serialVersionUID = 1894632443394847590L;
@@ -17,7 +25,6 @@ public abstract class TaskClosure<R> implements Task<R>{
 	protected static final boolean LONG_RUNNING = false;
 	protected static final int DEFAULT_PRIORITY = 0;
 	protected static final int NO_INPUTS = 0;	
-	
 	
 	/** Id of the task as recognized by scheduler and computers */
 	private long uid;

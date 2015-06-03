@@ -5,6 +5,13 @@ import api.ComputerCallback;
 import api.Result;
 import api.SharedState;
 
+/**
+ * Compares TSP walks and returns best one
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class TaskCompareTsp extends TaskClosure<ChunkTsp>{
 
 	private static final long serialVersionUID = -2157191669367268779L;

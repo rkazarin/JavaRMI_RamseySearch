@@ -5,6 +5,15 @@ import api.ComputerCallback;
 import api.Result;
 import api.SharedState;
 
+/**
+ * Runs a Ramsey(5,5) search for counterexamples.
+ * Starts searching from the constructed graph and keeps searching until the size specified.
+ * Produces partial results to the computer.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class RamseyTask extends TaskClosure<Graph> {
 
 	private static final long serialVersionUID = 6673708275266440578L;

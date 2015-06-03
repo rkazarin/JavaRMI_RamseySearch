@@ -5,6 +5,15 @@ import java.util.BitSet;
 import java.util.Random;
 import java.util.UUID;
 
+/**
+ * Represents a complete graph with a 2-color coloring
+ * Can be used for finding mono-chrmoatic size cliques
+ * Has helper methods for adding nodes, and generating graphs 
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class Graph implements Comparable<Graph>, Serializable{
 	
 	private static final long serialVersionUID = 5253025260499448857L;

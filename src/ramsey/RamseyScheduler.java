@@ -18,6 +18,15 @@ import api.SharedState;
 import api.Task;
 import util.Log;
 
+/**
+ * Defines a Ramsey Scheduler that searches for R(5,5) assigning tasks
+ * to computers in an efficient manner based on the current progress and the capabilities
+ * of the connected computers.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class RamseyScheduler implements Scheduler<Graph> {
 
 	private static final long serialVersionUID = -5111266450833430476L;

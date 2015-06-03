@@ -12,13 +12,20 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.Map;
 import java.util.Queue;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
+/**
+ * A Graph Store that saves counterexamples for a Ramsey Search
+ * Can be saved and loaded from file.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class RamseyStore extends UnicastRemoteObject implements Serializable, Iterable<Graph>, GraphStore{
 
 	private static final long serialVersionUID = 8867753203624856389L;
@@ -90,11 +97,6 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 		return map.containsKey(graphId);
 	}
 	
-	@Override
-	public int sizeOfStore(){
-		return map.size();
-	}
-
     /**
      * Save graph store to disk
      */
