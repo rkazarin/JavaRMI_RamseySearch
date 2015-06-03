@@ -11,12 +11,7 @@ public interface GraphStore extends Remote{
 	public static String DEFAULT_NAME = "GraphStore";
 	
 	boolean put(Graph example) throws RemoteException;
-	Graph access(UUID graphID) throws RemoteException;
 	boolean contains(UUID graphId) throws RemoteException;
-	
-	Queue<Graph> accessAllSize(int size) throws RemoteException;
-
-	Queue<Graph> accessAllGreaterThan(int size) throws RemoteException;
 
 	Graph getBestUnasigned() throws RemoteException;
 	Graph getBestUnasigned(int startingAt) throws RemoteException;

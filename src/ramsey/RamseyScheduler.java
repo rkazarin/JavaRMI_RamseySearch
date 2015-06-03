@@ -64,7 +64,10 @@ public class RamseyScheduler implements Scheduler<Graph> {
 	public void stop() {
 		isRunning = false;	
 	}
-	
+
+    /**
+     * Initialize a Graph Store
+     */
 	private void findAndSetStore(){
 		while(isRunning) try {
 			store = (GraphStore) Naming.lookup(graphStoreAddress);
@@ -75,7 +78,10 @@ public class RamseyScheduler implements Scheduler<Graph> {
 			catch (InterruptedException e1) {}
 		}  
 	}
-	
+
+    /**
+     * Constantly loop through computer proxies and assign them appropriate tasks
+     */
 	private Runnable generateTasker() {
 		return new Runnable() {
 			@Override
@@ -91,8 +97,11 @@ public class RamseyScheduler implements Scheduler<Graph> {
 			}
 		};
 	};
-	
-	
+
+
+    /**
+     * Put a solution into the Graph Store
+     */
 	private Runnable solutionSender() {
 		return new Runnable() {
 			@Override
@@ -114,7 +123,11 @@ public class RamseyScheduler implements Scheduler<Graph> {
 			}
 		};
 	};
-	
+
+    /**
+     * Generate a task given the specification of a given proxy
+     * @param proxy a specific proxy
+     */
 	private Task<Graph> generateTask(Proxy<Graph> proxy){
 		Capabilities spec = proxy.getCapabilities();
 		if(spec.isOnSpace()) return null; //dont schedule on space
@@ -152,6 +165,10 @@ public class RamseyScheduler implements Scheduler<Graph> {
         return null;
 	}
 
+    /**
+     * Either we get a counterexample or an exception
+     * @param result a specific proxy
+     */
 	@Override
 	public void processResult(Result<Graph> result) {
 		

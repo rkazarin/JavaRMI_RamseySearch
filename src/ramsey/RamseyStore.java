@@ -44,6 +44,10 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 		}
 	}
 
+    /**
+     * Store a given graph into the graph store
+     * @param graph a graph instnace
+     */
 	@Override
 	public synchronized boolean put(Graph graph){
 		Queue<Graph> set = hierarchy[graph.size()];
@@ -59,29 +63,14 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 	}
 	
 	@Override
-	public synchronized Graph access(UUID graphID){
-		return map.get(graphID);
-	}
-	
-	@Override
-	public synchronized Queue<Graph> accessAllSize(int size){
-		return hierarchy[size];
-	}
-	
-	@Override
-	public synchronized Queue<Graph> accessAllGreaterThan(int size){
-		LinkedList<Graph> list = new LinkedList<>();
-		for(int i = hierarchy.length-1; i > size ; i--){
-			list.addAll(hierarchy[i]);
-		}
-		return list;
-	}
-	
-	@Override
 	public synchronized Graph getBestUnasigned(){
 		return getBestUnasigned(Integer.MAX_VALUE);
 	}
-	
+
+    /**
+     * Find the best graph currently in the graph store, starting at a given size
+     * @param startingAt starting size
+     */
 	@Override
 	public synchronized Graph getBestUnasigned(int startingAt){
 		if(startingAt > unassigned.length-1) 
@@ -105,7 +94,10 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 	public int sizeOfStore(){
 		return map.size();
 	}
-	
+
+    /**
+     * Save graph store to disk
+     */
 	public synchronized void save() throws IOException{
 		File bankFile = new File(BANK_FILENAME);
 		File bankTempFile = new File(BANK_FILENAME+TEMP_EXTENSION);
@@ -124,7 +116,12 @@ public class RamseyStore extends UnicastRemoteObject implements Serializable, It
 	    bankFile.delete();
 	    bankTempFile.renameTo(bankFile);
 	}
-	
+
+    /**
+     * Load graph store from disk
+     * @param filename name of file
+     * @param maxSize size of graph store
+     */
 	@SuppressWarnings("unchecked")
 	public static RamseyStore load( String filename, int maxSize ) throws RemoteException{
 		File bankFile = new File(filename);
