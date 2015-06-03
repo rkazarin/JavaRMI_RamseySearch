@@ -9,6 +9,15 @@ import util.Log;
 import system.StateBlank;
 import api.Space;
 
+/**
+ * Runs a Client that connects to a RamseyStore and Space and begins an R(5,5) search.
+ * Print out solutions as they are encountered.
+ * Can be disconected at any point after seting up the run.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class RamseyClient {
 	
     @SuppressWarnings("unchecked")

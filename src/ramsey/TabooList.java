@@ -3,6 +3,13 @@ package ramsey;
 import java.io.Serializable;
 import java.util.HashSet;
 
+/**
+ * A list of flipped edges that prevents revisiting graphs in a given search.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class TabooList implements Serializable {
 
 	private static final long serialVersionUID = -6356707817281392834L;

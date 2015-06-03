@@ -15,6 +15,13 @@ import api.Scheduler;
 import api.SharedState;
 import api.Task;
 
+/**
+ * Basic Fork/Join Scheduler 
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class SchedulerDefault<R> implements Scheduler<R> {
 
 	private static final long serialVersionUID = 4553427787142633L;	
@@ -50,7 +57,6 @@ public class SchedulerDefault<R> implements Scheduler<R> {
 			schedule(task);
 	};
 
-	
 	@Override
 	public synchronized void processResult(Result<R> result) {
 

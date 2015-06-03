@@ -21,6 +21,15 @@ import api.SharedState;
 import api.Space;
 import api.Task;
 
+/**
+ * Implementation of a Space.
+ * 
+ * Assigns UIDs to tasks and handles comunication with ComputeNodes.
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class SpaceImp<R> extends UnicastRemoteObject implements Space<R>{
 
 	/** Serial ID */

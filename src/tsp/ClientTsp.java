@@ -22,6 +22,14 @@ import api.Result;
 import api.SharedState;
 import api.Space;
 
+/**
+ * Client that starts TSP Tasks
+ * On verity of number of Cities 
+ *  
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class ClientTsp extends JFrame{
 
 	/** Serial ID	 */

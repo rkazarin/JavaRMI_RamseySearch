@@ -18,6 +18,14 @@ import api.Space;
 import api.Task;
 import api.ComputerCallback;
 
+/**
+ * Implementations of a Computer that connects to space and does computations
+ * Has Multiple ComputeThreads
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class ComputeNode<R> extends UnicastRemoteObject implements Computer<R> {
 
 	private static final long serialVersionUID = -4962774042291137071L;

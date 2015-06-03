@@ -10,10 +10,16 @@ import api.Result;
 import api.SharedState;
 import api.Task;
 
+/**
+ * Task that does a TSP Search, forking apropriatly
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 public class TaskTsp extends TaskClosure<ChunkTsp> {
 
 	private static final long serialVersionUID = -2567928535294012341L;
-	
 	private static final int BASIC_TSP_PROBLEM_SIZE = 11;
 	
 	private StateTsp currentState;

@@ -4,6 +4,13 @@ import java.util.Comparator;
 
 import api.Task;
 
+/**
+ * Compares two tasks based on priority
+ * 
+ * @author Michael Nekrasov
+ * @author Roman Kazarin
+ *
+ */
 @SuppressWarnings("rawtypes")
 public class TaskComparator implements Comparator<Task> {
 
